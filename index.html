@@ -390,6 +390,7 @@ pages.admin=async()=>{
     <div class="row" style="margin-top:8px">${b.status!=="approved"?`<button class="btn g s" data-ad="ok|${esc(b.id)}">Approve</button>`:`<button class="btn o s" data-ad="star|${esc(b.id)}">${b.featured?"★ Unfeature":"☆ Feature"}</button>`}<a class="btn o s" href="#/biz/${esc(b.id)}">Open</a><button class="btn r s" data-ad="del|${esc(b.id)}">Remove</button></div></div>`;
   return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
   <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
+  <button class="btn g big" data-ad="add|x" style="margin:10px 0">➕ Add a business myself</button>
   <div class="head"><h2>⏳ Waiting for approval</h2></div>${pend.length?pend.map(row).join(""):`<p class="muted">Nothing waiting.</p>`}
   <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div>`).join(""):`<p class="muted">No reports.</p>`}
   <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}`;
@@ -531,6 +532,7 @@ document.addEventListener("click",async e=>{
     if(why&&why.trim()){try{await fb.addDoc(col("reports"),{bizId:b.id,name:b.name,why:why.trim().slice(0,400),by:U.uid,t:Date.now()});toast("Thank you. The admin will check.")}catch(x){toast(friendly(x))}}return}
   const ad=e.target.closest("[data-ad]");
   if(ad){const [a,id]=ad.dataset.ad.split("|");
+    if(a==="add")return adminAdd();
     try{
       if(a==="rep")await fb.deleteDoc(dref("reports",id));
       if(a==="ok")await fb.updateDoc(dref("businesses",id),{status:"approved"});
@@ -540,6 +542,30 @@ document.addEventListener("click",async e=>{
     }catch(x){toast(friendly(x))}
   }
 });
+
+function adminAdd(){
+  const m=modal(`<h2>Add a business</h2><p class="muted small">It goes live at once. The shop owner is not linked, so you manage it from Admin.</p>
+   <label>Business name</label><input id="an" maxlength="70">
+   <label>What do they sell?</label><select id="ac"><option value="">Choose one</option>${Object.keys(CATS).map(c=>`<option>${esc(c)}</option>`).join("")}</select>
+   <label>Owner name</label><input id="ao" maxlength="60">
+   <label>Mobile / WhatsApp (10 digits)</label><input id="ap" type="tel" inputmode="numeric" maxlength="10">
+   <label>City</label><input id="ay" maxlength="40"><label>Area</label><input id="aa" maxlength="50">
+   <label>Commission</label><select id="at"><option value="percent">Percent (%)</option><option value="fixed">Fixed (₹)</option><option value="talk">Talk to owner</option></select>
+   <input id="av" type="number" min="0" step="any" placeholder="Amount (example 10 or 500)">
+   <p class="err" id="ae"></p><button class="btn g big" id="ag">Add business</button>`);
+  $("#ag",m).onclick=async()=>{
+    const v=i=>$(i,m).value.trim(),er=$("#ae",m),ct=v("#at"),cv=+v("#av");
+    if(!v("#an")||!v("#ac")||!v("#ao")||!v("#ay")||!v("#aa"))return er.textContent="Please fill all the details.";
+    if(!/^[6-9]\d{9}$/.test(v("#ap")))return er.textContent="Please write a correct 10-digit number.";
+    if(ct!=="talk"&&!(cv>0))return er.textContent="Please write the commission amount.";
+    if(ct==="percent"&&cv>100)return er.textContent="Percent cannot be more than 100.";
+    const btn=$("#ag",m);btn.disabled=true;
+    try{
+      await fb.addDoc(col("businesses"),{name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,note:"",desc:"",img:"",ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
+      bust();m.close();toast("Business added");route(true);
+    }catch(x){er.textContent=friendly(x);btn.disabled=false}
+  };
+}
 
 function referral(b){
   const m=modal(`<h2>Refer a customer to<br>${esc(b.name)}</h2>
