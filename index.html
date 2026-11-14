@@ -1,0 +1,604 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#1565c0">
+<title>BusinessConnect – Refer customers. Earn commission.</title>
+<style>
+:root{--blue:#1565c0;--blue-d:#0d47a1;--blue-l:#e3f0ff;--green:#1b9e5a;--green-d:#13794a;--green-l:#e4f7ec;--ink:#16222e;--muted:#5f6f7f;--line:#e3e9ef;--bg:#f4f7fb;--card:#fff;--soft:#eef3f8;--warn:#9a5b00;--warn-l:#fff4e0;--red:#c62828;--shadow:0 4px 16px rgba(20,60,100,.08);color-scheme:light}
+[data-theme=dark]{--blue:#5aa5f7;--blue-d:#3b8ae0;--blue-l:#17304f;--green:#2fc57a;--green-d:#47d98f;--green-l:#133a2a;--ink:#e8eef5;--muted:#9fb0c1;--line:#26364a;--bg:#0d1621;--card:#152130;--soft:#1b2a3a;--warn:#f0b04a;--warn-l:#3a2d12;--red:#ff7b7b;--shadow:0 4px 16px rgba(0,0,0,.35);color-scheme:dark}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);font-size:17px;line-height:1.5;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+a{color:var(--blue);text-decoration:none}
+h1{font-size:1.6rem;line-height:1.2;margin:.3em 0}
+h2{font-size:1.25rem;margin:0 0 .5em}
+h3{font-size:1.08rem;margin:0}
+p{margin:.4em 0}
+.wrap{max-width:900px;margin:0 auto;padding:0 16px}
+.muted{color:var(--muted)}.small{font-size:.88rem}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.between{justify-content:space-between}
+
+/* header */
+header{position:sticky;top:0;z-index:50;background:var(--card);border-bottom:1px solid var(--line);padding-top:env(safe-area-inset-top)}
+.bar{display:flex;align-items:center;gap:8px;height:56px}
+.logo{font-weight:800;font-size:1.3rem;color:var(--blue);margin-right:auto}.logo b{color:var(--green)}
+.ib{width:42px;height:42px;border-radius:12px;border:0;background:var(--soft);font-size:1.15rem;cursor:pointer;color:var(--ink)}
+#sp{display:none;padding:0 0 10px}#sp.on{display:block}
+.demo{background:var(--ink);color:var(--bg);text-align:center;font-size:.78rem;padding:5px 10px}
+
+/* inputs & buttons */
+input,select,textarea{width:100%;font:inherit;padding:13px;border:1.5px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink)}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-l)}
+label{display:block;font-weight:700;font-size:.95rem;margin:14px 0 5px}
+label small{font-weight:400;color:var(--muted)}
+.btn{display:inline-block;border:0;border-radius:12px;background:var(--blue);color:#fff;font:inherit;font-weight:700;padding:13px 18px;cursor:pointer;text-align:center}
+.btn:active{transform:scale(.97)}
+.btn.g{background:var(--green)}.btn.o{background:transparent;color:var(--blue);border:2px solid var(--blue)}.btn.r{background:var(--red)}
+.btn.s{padding:9px 14px;font-size:.92rem}.btn.big{display:block;width:100%;font-size:1.1rem;padding:16px}
+.btn[disabled]{opacity:.5}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow)}
+.pad{padding:16px}
+.chip{display:inline-block;background:var(--blue-l);color:var(--blue);font-weight:700;font-size:.8rem;padding:4px 11px;border-radius:99px}
+.chip.g{background:var(--green-l);color:var(--green-d)}.chip.w{background:var(--warn-l);color:var(--warn)}
+.note{background:var(--warn-l);color:var(--ink);border-left:5px solid var(--warn);border-radius:10px;padding:11px 13px;font-size:.93rem;margin:14px 0}
+.err{color:var(--red);font-weight:600;min-height:1.3em;margin:8px 0 0}
+
+/* home */
+.hero{background:linear-gradient(135deg,#1565c0,#0f7f8f 55%,#1b9e5a);color:#fff;border-radius:24px;padding:24px 18px;margin:14px 0;text-align:center}
+.hero h1{font-size:1.75rem}.hero p{opacity:.95}
+.hero .two{display:grid;gap:10px;margin-top:16px}
+.hero .btn{font-size:1.05rem;padding:16px}.hero .w{background:#fff;color:var(--blue-d)}.hero .t{background:rgba(255,255,255,.16);border:2px solid #fff}
+.steps{display:grid;gap:10px}
+.step{display:flex;gap:14px;align-items:flex-start;padding:14px}
+.num{flex:none;width:38px;height:38px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none;margin:0 -16px;padding-left:16px;padding-right:16px}
+.chips::-webkit-scrollbar{display:none}
+.chips a{flex:none;background:var(--card);border:1.5px solid var(--line);border-radius:99px;padding:9px 15px;color:var(--ink);font-weight:600;font-size:.95rem;white-space:nowrap}
+.chips a.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.head{display:flex;justify-content:space-between;align-items:center;margin:24px 0 10px}.head h2{margin:0}
+
+/* business cards */
+.grid{display:grid;gap:14px}
+@media(min-width:640px){.grid{grid-template-columns:1fr 1fr}.hero .two{grid-template-columns:1fr 1fr}}
+@media(min-width:900px){.grid{grid-template-columns:repeat(3,1fr)}}
+.biz{overflow:hidden}
+.pic{display:block;height:150px;position:relative;background:var(--soft)}
+.pic img{width:100%;height:100%;object-fit:cover;display:block}
+.earn{position:absolute;left:10px;bottom:10px;background:var(--green);color:#fff;font-weight:800;padding:6px 12px;border-radius:99px;font-size:.92rem;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+.biz .b{padding:13px 14px 14px}
+.biz .sub{color:var(--muted);font-size:.9rem;margin:2px 0 10px}
+.btns{display:flex;gap:8px;align-items:center}
+.btns .btn{flex:1;padding:11px 6px;font-size:.95rem}
+.heart{flex:none;width:46px;height:46px;border-radius:12px;border:1.5px solid var(--line);background:var(--card);font-size:1.3rem;cursor:pointer;color:var(--red)}
+.empty{text-align:center;padding:40px 10px;color:var(--muted)}.empty b{display:block;font-size:1.1rem;color:var(--ink)}
+
+/* detail */
+.gal{display:flex;gap:8px;overflow-x:auto;scroll-snap-type:x mandatory}.gal img{height:210px;border-radius:16px;scroll-snap-align:start;max-width:88vw;object-fit:cover}
+.money{background:var(--green-l);border:2px solid var(--green);border-radius:18px;padding:16px;text-align:center;margin:14px 0}
+.money small{display:block;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.money b{display:block;font-size:1.7rem;color:var(--green-d)}
+.rowbtn{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+
+/* referrals */
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--soft);border-radius:14px;padding:4px;margin:12px 0}
+.seg a{text-align:center;padding:11px 6px;border-radius:11px;font-weight:700;color:var(--muted)}.seg a.on{background:var(--card);color:var(--blue);box-shadow:var(--shadow)}
+.prog{display:flex;gap:4px;margin:10px 0 4px}.prog i{flex:1;height:8px;border-radius:5px;background:var(--line)}.prog i.on{background:var(--green)}
+.proglab{display:flex;justify-content:space-between;font-size:.76rem;color:var(--muted);font-weight:600}
+.rc{padding:14px;margin-bottom:12px}
+
+/* account */
+.list a,.list button{display:flex;align-items:center;gap:14px;width:100%;padding:16px;background:none;border:0;border-bottom:1px solid var(--line);font:inherit;color:var(--ink);text-align:left;cursor:pointer}
+.list a:last-child,.list button:last-child{border-bottom:0}
+.list .ic{font-size:1.4rem;width:34px;text-align:center}.list .go{margin-left:auto;color:var(--muted)}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center}
+.stat div{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 4px}.stat b{display:block;font-size:1.5rem;color:var(--blue)}.stat span{font-size:.78rem;color:var(--muted)}
+
+/* tab bar */
+nav{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom);z-index:60;box-shadow:0 -4px 16px rgba(20,60,100,.08)}
+nav a{flex:1;display:flex;flex-direction:column;align-items:center;gap:1px;padding:8px 0 7px;color:var(--muted);font-size:.69rem;font-weight:700;white-space:nowrap}
+nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(--blue)}
+@media(min-width:900px){body{padding-bottom:20px}}
+
+/* modal + toast */
+.mw{position:fixed;inset:0;background:rgba(8,20,32,.55);z-index:100;display:flex;align-items:flex-end;justify-content:center}
+.m{background:var(--card);width:100%;max-width:520px;max-height:92vh;overflow:auto;border-radius:24px 24px 0 0;padding:20px 18px calc(20px + env(safe-area-inset-bottom));position:relative}
+@media(min-width:640px){.mw{align-items:center}.m{border-radius:24px}}
+.x{position:absolute;right:10px;top:6px;border:0;background:none;font-size:2rem;color:var(--muted);cursor:pointer}
+#toast{position:fixed;left:0;right:0;bottom:calc(86px + env(safe-area-inset-bottom));display:flex;justify-content:center;z-index:200;pointer-events:none}
+#toast span{background:var(--ink);color:var(--bg);padding:11px 18px;border-radius:12px;opacity:0;transform:translateY(8px);transition:.25s;font-weight:600;max-width:90vw}
+#toast.on span{opacity:1;transform:none}
+.code{font-size:1.7rem;font-weight:800;letter-spacing:2px;text-align:center;background:var(--green-l);color:var(--green-d);border-radius:14px;padding:12px;margin:10px 0}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:.95rem}.check input{width:22px;height:22px;flex:none;margin-top:2px}
+.pre{flex:none;background:var(--soft);border:1.5px solid var(--line);border-radius:12px;padding:13px;font-weight:700}
+.spin{width:36px;height:36px;border:4px solid var(--blue-l);border-top-color:var(--blue);border-radius:50%;margin:40px auto 10px;animation:sp 1s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style><style>[hidden]{display:none!important}</style>
+</head>
+<body>
+<header><div class="wrap">
+  <div class="bar">
+    <a class="logo" href="#/">Business<b>Connect</b></a>
+    <a class="btn g s" id="lg" href="#/login" hidden>Login</a>
+    <button class="ib" id="sb" aria-label="Search">🔍</button>
+    <button class="ib" id="tb" aria-label="Dark or light mode">🌙</button>
+  </div>
+  <form id="sp"><div class="row" style="flex-wrap:nowrap"><input id="sq" type="search" placeholder="Search shop, service or city"><button class="btn g">Search</button></div></form>
+</div></header>
+<main class="wrap" id="app"><div class="spin"></div></main>
+<nav>
+  <a href="#/" data-t="home"><i>🏠</i>Home</a>
+  <a href="#/list" data-t="list"><i>🔎</i>Businesses</a>
+  <a href="#/shop" data-t="shop"><i>🏪</i>My Business</a>
+  <a href="#/refs" data-t="refs"><i>📋</i>Referrals</a>
+  <a href="#/me" data-t="me"><i>👤</i>Account</a>
+</nav>
+<div id="toast"><span></span></div>
+<div id="rc"></div>
+
+<script type="module">
+// ============ Firebase settings (these are public web settings, safe to keep here) ============
+const FB_VERSION = "13.3.0";
+const firebaseConfig = {
+  apiKey: "AIzaSyCW30hxDg5IOjg3TUFyC2iIU6h5aSvXjKA",
+  authDomain: "business-reference-edcf3.firebaseapp.com",
+  projectId: "business-reference-edcf3",
+  storageBucket: "business-reference-edcf3.firebasestorage.app",
+  messagingSenderId: "610068375850",
+  appId: "1:610068375850:web:2eb89ec823d5b9c01f9653"
+};
+
+// ============ small helpers ============
+const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
+const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Clothing and Fashion":"👗","Grocery":"🛒","Restaurants and Hotels":"🍽️","Automobile":"🚗","Education":"🎓","Coaching Classes":"📚","Travel and Tourism":"✈️","Beauty and Salon":"💇","Healthcare Services":"🏥","Construction":"🏗️","Interior Design":"🛋️","Furniture":"🪑","Digital Marketing":"📣","Web Development":"💻","Insurance":"🛡️","Financial Services":"💰","Event Management":"🎉","Wholesale and Retail":"📦","Other Services":"🧰"};
+const SHORT={"Clothing and Fashion":"Fashion","Restaurants and Hotels":"Food & Hotels","Healthcare Services":"Health","Wholesale and Retail":"Wholesale","Financial Services":"Finance","Travel and Tourism":"Travel","Event Management":"Events"};
+const catName=c=>SHORT[c]||c;
+const art=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='400' height='300' fill='url(#g)'/><text x='200' y='195' font-size='120' text-anchor='middle'>${e}</text></svg>`);
+const imgOf=b=>b.img||art(CATS[b.cat]||"🏪","#1565c0","#1b9e5a");
+const toast=m=>{const t=$("#toast");t.firstElementChild.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),3000)};
+const earnText=b=>b.ct==="percent"?`${b.cv}% commission`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")} per customer`:"Talk to owner";
+const earnShort=b=>b.ct==="percent"?`${b.cv}%`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")}`:"Negotiable";
+const wa=(p,t="")=>`https://wa.me/91${p}${t?"?text="+encodeURIComponent(t):""}`;
+const fmtD=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
+const spin=()=>`<div class="spin"></div>`;
+const lastOrder=(a,b)=>(b.t||0)-(a.t||0);
+
+// one code per worker + business pair (always the same for the same pair)
+function mkCode(a,b){let h1=0xdeadbeef,h2=0x41c6ce57;const s=a+"|"+b;for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  let n=4294967296*(2097151&h2)+(h1>>>0);const C="ABCDEFGHJKLMNPQRSTUVWXYZ23456789";let o="";for(let i=0;i<7;i++){o+=C[n%32];n=Math.floor(n/32)}return "BC-"+o}
+
+function friendly(e){
+  const c=(e&&e.code)||"";
+  if(c.includes("invalid-phone-number"))return "This mobile number is not correct.";
+  if(c.includes("too-many-requests"))return "Too many tries. Please wait a few minutes.";
+  if(c.includes("invalid-verification-code"))return "Wrong code. Please check and try again.";
+  if(c.includes("code-expired"))return "This code has expired. Please ask for a new one.";
+  if(c.includes("billing-not-enabled")||c.includes("quota-exceeded"))return "Real SMS is not switched on yet. Use the test number saved in Firebase.";
+  if(c.includes("unauthorized-domain")||c.includes("captcha"))return "This website address is not allowed yet. Add it in Firebase → Authentication → Settings → Authorized domains.";
+  if(c.includes("permission-denied"))return "You are not allowed to do this. Please login again.";
+  if(c.includes("network"))return "No internet. Please try again.";
+  return (e&&e.message)||"Something went wrong. Please try again.";
+}
+function shrink(file){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,640/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",.65))};im.src=fr.result};fr.readAsDataURL(file)})}
+function modal(html){const w=document.createElement("div");w.className="mw";w.innerHTML=`<div class="m"><button class="x" aria-label="Close">×</button>${html}</div>`;document.body.appendChild(w);w.close=()=>w.remove();w.onclick=e=>{if(e.target===w||e.target.classList.contains("x"))w.close()};return w}
+
+// ============ Firebase ============
+let fb={},db=null,auth=null;
+let U=null,P=null,ADMIN=false,READY=false,SAVED=new Set(),NEXT=null;
+const col=n=>fb.collection(db,n), dref=(...p)=>fb.doc(db,...p);
+const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+
+async function loadExtras(){
+  try{ADMIN=(await fb.getDoc(dref("admins",U.uid))).exists()}catch{ADMIN=false}
+  try{SAVED=new Set((await fb.getDocs(col("users/"+U.uid+"/saved"))).docs.map(d=>d.id))}catch{SAVED=new Set()}
+}
+let cache={at:0,list:[]};
+const bust=()=>{cache.at=0};
+async function approved(){
+  if(Date.now()-cache.at<30000)return cache.list;
+  const s=await fb.getDocs(fb.query(col("businesses"),fb.where("status","==","approved")));
+  cache={at:Date.now(),list:rows(s)};return cache.list;
+}
+async function getBiz(id){const s=await fb.getDoc(dref("businesses",id));return s.exists()?{id:s.id,...s.data()}:null}
+async function listRefs(field){
+  if(!U)return[];
+  const s=await fb.getDocs(fb.query(col("referrals"),fb.where(field,"==",U.uid)));
+  return rows(s).sort(lastOrder);
+}
+
+// ============ pieces ============
+function card(b){
+  const sv=SAVED.has(b.id);
+  return `<article class="card biz">
+    <a class="pic" href="#/biz/${esc(b.id)}"><img loading="lazy" src="${esc(imgOf(b))}" alt=""><span class="earn">💸 ${esc(earnShort(b))}</span></a>
+    <div class="b"><h3>${esc(b.name)}</h3>
+      <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
+      <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a><a class="btn g" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">Call</a><button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button></div>
+    </div></article>`;
+}
+function refItem(r,tab){
+  const lab=["Sent","Bought","Paid"],i=["sent","bought","paid"].indexOf(r.status);
+  let act="";
+  if(tab==="shop"){
+    if(r.status==="sent")act=`<button class="btn g s" data-st="${esc(r.id)}|bought">✔ Customer bought</button>`;
+    if(r.status==="bought")act=`<button class="btn g s" data-st="${esc(r.id)}|paid">✔ I paid the commission</button>`;
+    if(r.workerPhone)act+=` <a class="btn o s" target="_blank" rel="noopener" href="${wa(r.workerPhone)}">💬 ${esc(r.workerName)}</a>`;
+  }else if(r.status==="bought"&&r.bizPhone){
+    act=`<a class="btn g s" target="_blank" rel="noopener" href="${wa(r.bizPhone,"Hi, my referral code "+r.code+" ("+r.customer+") bought from you. Please share my commission.")}">💬 Ask for commission</a>`;
+  }
+  return `<div class="card rc"><div class="row between"><h3>${esc(r.customer)}</h3><span class="chip ${r.status==="paid"?"g":r.status==="bought"?"w":""}">${r.status==="paid"?"Paid":r.status==="bought"?"Bought":"Sent"}</span></div>
+    <p class="muted small" style="margin:2px 0">${tab==="mine"?"To: <b>"+esc(r.bizName)+"</b>":"From: <b>"+esc(r.workerName)+"</b>"} · ${fmtD(r.t)} · Code <b>${esc(r.code)}</b></p>
+    <div class="prog">${[0,1,2].map(n=>`<i class="${n<=i?"on":""}"></i>`).join("")}</div>
+    <div class="proglab">${lab.map(x=>`<span>${x}</span>`).join("")}</div>
+    ${act?`<div class="row" style="margin-top:10px">${act}</div>`:""}</div>`;
+}
+const emptyBiz=`<div class="empty"><b>🏪 No businesses yet</b>Be the first! Add your business for free.<br><br><a class="btn g" href="#/shop">Add my business</a></div>`;
+
+// ============ pages ============
+const pages={};
+
+pages.home=async()=>{
+  const l=await approved();
+  const top=[...l].sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b)).slice(0,4);
+  const cats=[...new Set(l.map(b=>b.cat))];
+  return `
+  <section class="hero">
+    <h1>Refer customers.<br>Earn commission.</h1>
+    <p>Tell people about local shops. When they buy, the shop pays you. It's <b>100% free</b>.</p>
+    <div class="two"><a class="btn w" href="#/list">💸 I want to EARN</a><a class="btn t" href="#/shop">🏪 I have a BUSINESS</a></div>
+  </section>
+  <div class="head"><h2>How it works</h2></div>
+  <div class="steps">
+    <div class="card step"><div class="num">1</div><div><h3>Pick a business</h3><p class="muted small">See how much commission each shop gives.</p></div></div>
+    <div class="card step"><div class="num">2</div><div><h3>Send your customer</h3><p class="muted small">Tap “I referred a customer”. You get a code.</p></div></div>
+    <div class="card step"><div class="num">3</div><div><h3>Get paid by the shop</h3><p class="muted small">When the customer buys, the shop pays you directly.</p></div></div>
+  </div>
+  ${cats.length?`<div class="head"><h2>Browse by type</h2></div><div class="chips">${cats.map(c=>`<a href="#/list?cat=${encodeURIComponent(c)}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>`:""}
+  <div class="head"><h2>Popular businesses</h2>${l.length?`<a href="#/list"><b>See all →</b></a>`:""}</div>
+  ${top.length?`<div class="grid">${top.map(card).join("")}</div>`:emptyBiz}
+  <div class="note">💡 The shop pays your commission <b>directly to you</b>. This app never touches your money and cannot promise earnings.</div>`;
+};
+
+pages.list=async(q)=>{
+  const f={q:q.get("q")||"",cat:q.get("cat")||"",city:q.get("city")||""};
+  const l=await approved(),cities=[...new Set(l.map(b=>b.city))].sort(),cats=[...new Set(l.map(b=>b.cat))];
+  const hit=b=>(!f.cat||b.cat===f.cat)&&(!f.city||b.city===f.city)&&(!f.q||f.q.toLowerCase().split(/\s+/).every(w=>[b.name,b.cat,b.desc,b.city,b.area,earnText(b)].join(" ").toLowerCase().includes(w)));
+  const res=l.filter(hit).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b));
+  const link=o=>"#/list?"+new URLSearchParams(Object.fromEntries(Object.entries({...f,...o}).filter(([,v])=>v))).toString();
+  return `<h1>Businesses</h1>
+  <form id="lf" class="row" style="flex-wrap:nowrap"><input name="q" type="search" value="${esc(f.q)}" placeholder="Search shop, service or city"><button class="btn g">Search</button></form>
+  <div class="chips"><a class="${f.cat?"":"on"}" href="${link({cat:""})}">All</a>${cats.map(c=>`<a class="${f.cat===c?"on":""}" href="${link({cat:c})}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>
+  <select id="cityf" aria-label="City"><option value="">📍 All cities</option>${cities.map(c=>`<option ${f.city===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+  <p class="muted small" id="cnt" style="margin:12px 0">${res.length} business${res.length===1?"":"es"} found</p>
+  ${res.length?`<div class="grid">${res.map(card).join("")}</div>`:(l.length?`<div class="empty"><b>🔎 Nothing found</b>Try another word or choose “All”.</div>`:emptyBiz)}`;
+};
+
+pages.biz=async(q,id)=>{
+  const b=id?await getBiz(id):null;
+  const own=U&&b&&b.id===U.uid;
+  if(!b||(b.status!=="approved"&&!own&&!ADMIN))return `<div class="empty"><b>Business not found</b><a class="btn" href="#/list">Back</a></div>`;
+  const sv=SAVED.has(b.id);
+  return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
+  ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
+  <div class="gal"><img src="${esc(imgOf(b))}" alt=""></div>
+  <h1 style="margin-top:12px">${esc(b.name)}</h1>
+  <p class="muted">${CATS[b.cat]||"🏪"} ${esc(b.cat)} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
+  <div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>
+  ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`
+  :`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>
+   <div class="rowbtn"><a class="btn" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect and want to refer a customer.")}">💬 WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">📞 Call</a></div>`}
+  <div class="card pad" style="margin-top:6px"><h3>About</h3><p>${esc(b.desc||"—")}</p><p class="muted small">Owner: ${esc(b.owner)}</p></div>
+  <div class="card pad" style="margin-top:12px"><h3>How to earn here</h3>
+   <p>1. Tell your customer about this shop.<br>2. Tap “I referred a customer” and write their name.<br>3. Tell the shop your code. When the customer buys, the shop pays you.</p></div>
+  <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>
+  <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report</button>`}</div>`;
+};
+
+pages.refs=async(q)=>{
+  const b=await getBiz(U.uid);
+  const tab=q.get("t")==="shop"&&b?"shop":"mine";
+  const list=await listRefs(tab==="mine"?"workerUid":"bizId");
+  return `<h1>Referrals</h1>
+  ${b?`<div class="seg"><a class="${tab==="mine"?"on":""}" href="#/refs">I referred</a><a class="${tab==="shop"?"on":""}" href="#/refs?t=shop">Sent to my shop</a></div>`:""}
+  ${list.length?list.map(r=>refItem(r,tab)).join(""):`<div class="empty"><b>📋 Nothing here yet</b>${tab==="mine"?"Open a business and tap “I referred a customer”.":"When someone refers a customer to your shop, it shows here."}<br><br>${tab==="mine"?`<a class="btn g" href="#/list">Find businesses</a>`:""}</div>`}
+  <div class="note">A record here is <b>not proof</b> of a sale. The shop and you should agree on it. Commission is paid directly, outside this app.</div>`;
+};
+
+pages.shop=async()=>{
+  const b=await getBiz(U.uid);
+  if(!b)return `<h1>My Business</h1>
+  <div class="card pad" style="text-align:center"><div style="font-size:3rem">🏪</div><h2>Do you own a shop?</h2>
+   <p class="muted">Add your business for free. Workers will send you customers. You pay commission only when the customer buys.</p>
+   <a class="btn g big" href="#/edit">Add my business (free)</a></div>
+  <div class="card pad" style="margin-top:12px"><h3>How it works for you</h3><p>1. Fill a short form (2 minutes).<br>2. You choose how much commission to give.<br>3. Workers send customers with a code.<br>4. When a customer buys, you pay the worker directly.</p></div>`;
+  const inc=await listRefs("bizId");
+  const n=k=>inc.filter(r=>r.status===k).length;
+  const st=b.status==="approved"?["g","✔ Live"]:b.status==="pending"?["w","⏳ Waiting"]:["","Hidden"];
+  return `<h1>My Business</h1>
+  <article class="card biz"><a class="pic" href="#/biz/${esc(b.id)}"><img src="${esc(imgOf(b))}" alt=""><span class="earn">💸 ${esc(earnText(b))}</span></a>
+   <div class="b"><div class="row between"><h3>${esc(b.name)}</h3><span class="chip ${st[0]}">${st[1]}</span></div>
+   <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
+   <div class="btns"><a class="btn" href="#/edit">✏️ Edit</a><a class="btn o" href="#/biz/${esc(b.id)}">👁 View</a></div></div></article>
+  ${b.status==="pending"?`<div class="note">⏳ Your business is waiting for approval by the admin. After that, everyone can see it.</div>`:""}
+  <div class="stat" style="margin:14px 0"><div><b>${n("sent")}</b><span>New customers</span></div><div><b>${n("bought")}</b><span>Commission to pay</span></div><div><b>${n("paid")}</b><span>Paid</span></div></div>
+  <div class="head"><h2>Customers sent to you</h2></div>
+  ${inc.length?inc.map(r=>refItem(r,"shop")).join(""):`<div class="empty"><b>No customers yet</b>When a worker sends you a customer, it shows here.</div>`}
+  <div class="note">Pay the commission <b>directly to the worker</b>. This app never holds money.</div>`;
+};
+
+pages.me=async()=>{
+  const b=await getBiz(U.uid);
+  const [mine,inc]=await Promise.all([listRefs("workerUid"),b?listRefs("bizId"):[]]);
+  return `<h1>Account</h1>
+  <div class="card pad row between"><div><h3>${esc(P.name)}</h3><p class="muted small" style="margin:0">+91 ${esc(P.phone)}${P.city?" · "+esc(P.city):""}</p></div><button class="btn o s" id="rename">Change name</button></div>
+  <div class="stat" style="margin:12px 0"><div><b>${mine.length}</b><span>I referred</span></div><div><b>${mine.filter(r=>r.status==="paid").length}</b><span>Paid to me</span></div><div><b>${inc.length}</b><span>To my shop</span></div></div>
+  <div class="card list">
+    <a href="#/saved"><span class="ic">♥</span>Saved businesses<span class="go">›</span></a>
+    <a href="#/help"><span class="ic">❓</span>How it works<span class="go">›</span></a>
+    ${ADMIN?`<a href="#/admin"><span class="ic">🛡️</span>Admin<span class="go">›</span></a>`:""}
+    <button id="logout"><span class="ic">🚪</span>Logout</button>
+  </div>
+  ${ADMIN?"":`<p class="center small muted" style="padding:14px 0"><a href="#" id="copyid">🔑 Copy my ID (only needed to set up the admin)</a></p>`}`;
+};
+
+pages.saved=async()=>{
+  const l=(await approved()).filter(b=>SAVED.has(b.id));
+  return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Saved businesses</h1>
+  ${l.length?`<div class="grid">${l.map(card).join("")}</div>`:`<div class="empty"><b>♡ Nothing saved</b>Tap the heart on a business to save it.</div>`}`;
+};
+
+pages.help=async()=>`<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>How it works</h1>
+  <div class="card pad"><h2>💸 To earn money</h2><p>1. Open <b>Businesses</b> and pick one.<br>2. Tap <b>“I referred a customer”</b> and write the name. You get a code.<br>3. Tell the shop your code. When the customer buys, the shop pays you.</p></div>
+  <div class="card pad" style="margin-top:12px"><h2>🏪 If you own a shop</h2><p>1. Tap the <b>My Business</b> tab and fill the short form.<br>2. Choose how much commission you give.<br>3. When a customer comes, open <b>My Business</b> and tap the buttons.</p></div>
+  <div class="note"><b>Please remember</b><br>• It is free. No fees at all.<br>• The shop pays commission directly to you. This app never holds money.<br>• We cannot promise any earnings.<br>• Only share a customer's name if they agree.</div>
+  <div class="card pad"><h3>Privacy</h3><p class="small muted">A shop's phone number is shown to everyone, only after the owner agrees. A customer's name is seen only by you, the shop and the admin.</p></div>`;
+
+pages.edit=async()=>{
+  const ex=await getBiz(U.uid),ed=!!ex;
+  const b=ex||{ct:"percent",cat:"",city:P.city||"",phone:P.phone||"",owner:P.name||""};
+  return `<p style="margin:12px 0"><a href="#/shop"><b>← Back</b></a></p><h1>${ed?"Edit my Business":"Add my Business"}</h1>
+  <p class="muted">Free. Takes 2 minutes.</p>
+  <form id="ef" class="card pad">
+    <label>Shop / Business name</label><input name="name" maxlength="70" value="${esc(b.name)}">
+    <label>What do you sell?</label><select name="cat"><option value="">Choose one</option>${Object.keys(CATS).map(c=>`<option ${b.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <label>Your name</label><input name="owner" maxlength="60" value="${esc(b.owner)}">
+    <label>Mobile / WhatsApp number</label><input name="phone" type="tel" inputmode="numeric" maxlength="10" value="${esc(b.phone)}">
+    <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>City</label><input name="city" maxlength="40" value="${esc(b.city)}"></div><div style="flex:1"><label>Area</label><input name="area" maxlength="50" value="${esc(b.area)}"></div></div>
+    <label>💸 How much commission will you give?</label>
+    <select name="ct" id="ct"><option value="percent" ${b.ct==="percent"?"selected":""}>Percent of the bill (%)</option><option value="fixed" ${b.ct==="fixed"?"selected":""}>Fixed money (₹)</option><option value="talk" ${b.ct==="talk"?"selected":""}>Talk to me first</option></select>
+    <div id="cvw"><label id="cvl">Amount</label><input name="cv" type="number" min="0" step="any" value="${esc(b.cv)}"></div>
+    <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="Example: Paid within 7 days after the customer pays.">${esc(b.note)}</textarea>
+    <label>About your business <small>(optional)</small></label><textarea name="desc" rows="3" maxlength="400">${esc(b.desc)}</textarea>
+    <label>Photo <small>(optional)</small></label><input type="file" name="photo" accept="image/*">
+    ${b.img?`<div class="thumbs"><img src="${esc(b.img)}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:12px;margin-top:8px"></div>`:""}
+    <label class="check" style="margin-top:16px"><input type="checkbox" name="ok" ${ed?"checked":""}><span>I agree to show my business name and phone number to everyone.</span></label>
+    <p class="err" id="ee"></p>
+    <button class="btn g big">${ed?"Save changes":"Send my business (free)"}</button>
+  </form>
+  ${ed?`<div class="row" style="margin-top:14px">${["approved","hidden"].includes(b.status)?`<button class="btn o s" id="hide">${b.status==="hidden"?"Show my business":"Hide my business"}</button>`:""}<button class="btn r s" id="del">Delete</button></div>`:""}`;
+};
+
+pages.admin=async()=>{
+  if(!ADMIN)return `<div class="empty"><b>🔒 Admin only</b></div>`;
+  const [bs,rs]=await Promise.all([fb.getDocs(col("businesses")),fb.getDocs(col("reports"))]);
+  const all=rows(bs).sort(lastOrder),reps=rows(rs).sort(lastOrder);
+  const pend=all.filter(b=>b.status==="pending"),rest=all.filter(b=>b.status!=="pending");
+  const row=b=>`<div class="card rc"><div class="row between"><h3>${esc(b.name)}</h3><span class="chip ${b.status==="approved"?"g":"w"}">${esc(b.status)}</span></div><p class="muted small" style="margin:2px 0">${esc(b.cat)} · ${esc(b.city)} · ${esc(b.owner)} · ${esc(b.phone)}</p>
+    <div class="row" style="margin-top:8px">${b.status!=="approved"?`<button class="btn g s" data-ad="ok|${esc(b.id)}">Approve</button>`:`<button class="btn o s" data-ad="star|${esc(b.id)}">${b.featured?"★ Unfeature":"☆ Feature"}</button>`}<a class="btn o s" href="#/biz/${esc(b.id)}">Open</a><button class="btn r s" data-ad="del|${esc(b.id)}">Remove</button></div></div>`;
+  return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
+  <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
+  <div class="head"><h2>⏳ Waiting for approval</h2></div>${pend.length?pend.map(row).join(""):`<p class="muted">Nothing waiting.</p>`}
+  <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div>`).join(""):`<p class="muted">No reports.</p>`}
+  <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}`;
+};
+
+// ---------- login ----------
+const loginPage=(why)=>`<div class="card pad" style="margin-top:16px"><h1>Login</h1>
+  <p class="muted">${why||"Use your mobile number. We send a code by SMS. It is free."}</p>
+  <div id="s1"><label>Mobile number</label><div class="row" style="flex-wrap:nowrap"><span class="pre">+91</span><input id="ph" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit number" autocomplete="tel-national"></div>
+   <p class="err" id="e1"></p><button class="btn g big" id="send">Send code</button></div>
+  <div id="s2" hidden><label>Enter the 6-digit code sent to <b id="shown"></b></label><input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code">
+   <p class="err" id="e2"></p><button class="btn g big" id="verify">Verify and continue</button>
+   <p class="small" style="margin-top:12px"><a href="#" id="chg">Change number</a></p></div>
+  <div class="note">New here? No problem. Your account is made automatically after the code is checked.</div></div>`;
+let confirmation=null,verifier=null;
+function bindLogin(){
+  if(!$("#send"))return;
+  $("#send").onclick=async()=>{
+    const ph=$("#ph").value.replace(/\D/g,""),e1=$("#e1");e1.textContent="";
+    if(!/^[6-9]\d{9}$/.test(ph))return e1.textContent="Please write a correct 10-digit mobile number.";
+    const btn=$("#send");btn.disabled=true;btn.textContent="Sending…";
+    try{
+      if(!verifier)verifier=new fb.RecaptchaVerifier(auth,"rc",{size:"invisible"});
+      confirmation=await fb.signInWithPhoneNumber(auth,"+91"+ph,verifier);
+      $("#shown").textContent="+91 "+ph;$("#s1").hidden=true;$("#s2").hidden=false;$("#otp").focus();
+    }catch(e){e1.textContent=friendly(e);try{verifier&&verifier.clear()}catch{}verifier=null}
+    btn.disabled=false;btn.textContent="Send code";
+  };
+  $("#chg").onclick=e=>{e.preventDefault();$("#s2").hidden=true;$("#s1").hidden=false};
+  $("#verify").onclick=async()=>{
+    const c=$("#otp").value.trim(),e2=$("#e2");e2.textContent="";
+    if(!/^\d{6}$/.test(c))return e2.textContent="Please write the 6-digit code.";
+    const btn=$("#verify");btn.disabled=true;btn.textContent="Checking…";
+    try{await confirmation.confirm(c)}catch(e){e2.textContent=friendly(e);btn.disabled=false;btn.textContent="Verify and continue"}
+  };
+}
+const setupPage=()=>`<div class="card pad" style="margin-top:16px"><h1>Welcome! 👋</h1><p class="muted">Just two details and you are ready.</p>
+  <form id="pf"><label>Your name</label><input name="name" maxlength="60" autocomplete="name"><label>Your city</label><input name="city" maxlength="40">
+  <p class="err" id="pe"></p><button class="btn g big">Start</button></form></div>`;
+function bindSetup(){
+  const f=$("#pf");if(!f)return;
+  f.onsubmit=async e=>{
+    e.preventDefault();const d=new FormData(f),name=String(d.get("name")).trim(),city=String(d.get("city")).trim(),er=$("#pe");
+    if(name.length<2)return er.textContent="Please write your name.";
+    if(city.length<2)return er.textContent="Please write your city.";
+    const btn=f.querySelector("button");btn.disabled=true;
+    try{
+      const data={name,city,phone:(U.phoneNumber||"").replace(/\D/g,"").slice(-10),createdAt:Date.now()};
+      await fb.setDoc(dref("users",U.uid),data);P=data;await loadExtras();toast("Welcome, "+name+"!");
+      if(NEXT){location.hash=NEXT;NEXT=null}
+      route();
+    }catch(x){er.textContent=friendly(x);btn.disabled=false}
+  };
+}
+
+// ============ router ============
+const app=$("#app");
+const GATED=new Set(["shop","edit","refs","me","saved","admin"]);
+let tok=0;
+async function route(keep){
+  if(!READY){app.innerHTML=spin();return}
+  const my=++tok;
+  const parts=location.hash.replace(/^#\/?/,"").split("?"),segs=parts[0].split("/").filter(Boolean);
+  const name=segs[0]||"home",id=segs[1],q=new URLSearchParams(parts[1]||"");
+  const t=({home:"home",list:"list",biz:"list",refs:"refs",shop:"shop",edit:"shop"})[name]||(["me","saved","help","admin","login"].includes(name)?"me":"home");
+  $$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.t===t));
+  $("#lg").hidden=!!U;
+  const show=h=>{if(my!==tok)return false;app.innerHTML=h;if(!keep)window.scrollTo(0,0);return true};
+  if(name==="login"){
+    if(U&&P){const n=NEXT||"#/";NEXT=null;location.hash=n;return}
+    if(!U){show(loginPage());bindLogin();return}
+  }
+  if(U&&!P){show(setupPage());bindSetup();return}
+  if(GATED.has(name)&&!U){show(loginPage("Please login to use this. It only takes a minute."));bindLogin();return}
+  if(!pages[name]){show(`<div class="empty"><b>Page not found</b><a class="btn" href="#/">Go home</a></div>`);return}
+  if(!keep)app.innerHTML=spin();
+  try{const html=await pages[name](q,id);if(show(html))bind(name)}
+  catch(e){console.error(e);show(`<div class="empty"><b>⚠️ Could not load</b><p class="muted small">${esc(friendly(e))}</p><button class="btn" id="retry">Try again</button></div>`);const r=$("#retry");if(r)r.onclick=()=>route()}
+}
+window.addEventListener("hashchange",()=>route());
+
+function bind(name){
+  const lf=$("#lf");if(lf)lf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(lf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/list?"+p};
+  const cf=$("#cityf");if(cf)cf.onchange=()=>{const p=new URLSearchParams(location.hash.split("?")[1]||"");cf.value?p.set("city",cf.value):p.delete("city");location.hash="#/list?"+p};
+  const ef=$("#ef");if(ef)bindEdit(ef);
+  const rn=$("#rename");if(rn)rn.onclick=async()=>{const n=prompt("Your name",P.name);if(n&&n.trim()){try{await fb.updateDoc(dref("users",U.uid),{name:n.trim()});P.name=n.trim();route(true)}catch(e){toast(friendly(e))}}};
+  const lo=$("#logout");if(lo)lo.onclick=async()=>{await fb.signOut(auth);toast("Logged out");location.hash="#/"};
+  const ci=$("#copyid");if(ci)ci.onclick=e=>{e.preventDefault();(navigator.clipboard?navigator.clipboard.writeText(U.uid):Promise.reject()).then(()=>toast("ID copied"),()=>prompt("Copy your ID",U.uid))};
+  const hd=$("#hide");if(hd)hd.onclick=async()=>{try{const b=await getBiz(U.uid);await fb.updateDoc(dref("businesses",U.uid),{status:b.status==="hidden"?"approved":"hidden"});bust();toast("Done");route(true)}catch(e){toast(friendly(e))}};
+  const dl=$("#del");if(dl)dl.onclick=async()=>{if(!confirm("Delete your business?"))return;try{await fb.deleteDoc(dref("businesses",U.uid));bust();toast("Deleted");location.hash="#/shop"}catch(e){toast(friendly(e))}};
+}
+
+function bindEdit(form){
+  const sync=()=>{const t=$("#ct").value;$("#cvw").hidden=t==="talk";$("#cvl").textContent=t==="percent"?"Percent (%) – example: 10":"Amount in ₹ – example: 500"};
+  $("#ct").onchange=sync;sync();
+  form.onsubmit=async e=>{
+    e.preventDefault();
+    const f=new FormData(form),g=k=>String(f.get(k)||"").trim(),err=$("#ee"),fail=m=>{err.textContent=m;err.scrollIntoView({block:"center",behavior:"smooth"})};
+    if(!g("name"))return fail("Please write your business name.");
+    if(!g("cat"))return fail("Please choose what you sell.");
+    if(!g("owner"))return fail("Please write your name.");
+    if(!/^[6-9]\d{9}$/.test(g("phone")))return fail("Please write a correct 10-digit mobile number.");
+    if(!g("city")||!g("area"))return fail("Please write your city and area.");
+    const ct=g("ct"),cv=+g("cv");
+    if(ct!=="talk"&&!(cv>0))return fail("Please write the commission amount.");
+    if(ct==="percent"&&cv>100)return fail("Percent cannot be more than 100.");
+    if(!f.get("ok"))return fail("Please tick the box to agree.");
+    const btn=form.querySelector(".big");btn.disabled=true;btn.textContent="Saving…";
+    try{
+      const data={name:g("name"),cat:g("cat"),owner:g("owner"),phone:g("phone"),city:g("city"),area:g("area"),ct,cv:ct==="talk"?0:cv,note:g("note"),desc:g("desc")};
+      const p=f.get("photo");if(p&&p.size)data.img=await shrink(p);
+      const ex=await getBiz(U.uid);
+      if(ex)await fb.updateDoc(dref("businesses",U.uid),{...data,upd:Date.now()});
+      else await fb.setDoc(dref("businesses",U.uid),{img:"",...data,ownerUid:U.uid,status:"pending",featured:false,t:Date.now()});
+      bust();toast(ex?"Saved":"Sent for approval!");location.hash="#/shop";
+    }catch(x){console.error(x);fail(friendly(x));btn.disabled=false;btn.textContent="Save"}
+  };
+}
+
+// ============ buttons ============
+function needLogin(msg){NEXT=location.hash;toast(msg||"Please login first");location.hash="#/login"}
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){const m=$$(".mw");if(m.length)m[m.length-1].remove()}});
+document.addEventListener("click",async e=>{
+  const s=e.target.closest("[data-save]");
+  if(s){
+    if(!U)return needLogin("Please login to save");
+    const id=s.dataset.save,has=SAVED.has(id);
+    try{
+      has?await fb.deleteDoc(dref("users",U.uid,"saved",id)):await fb.setDoc(dref("users",U.uid,"saved",id),{t:Date.now()});
+      has?SAVED.delete(id):SAVED.add(id);
+      s.textContent=s.classList.contains("heart")?(has?"♡":"♥"):(has?"♡ Save":"♥ Saved");toast(has?"Removed":"Saved");
+      if(location.hash.startsWith("#/saved"))route(true);
+    }catch(x){toast(friendly(x))}
+    return;
+  }
+  const r=e.target.closest("[data-refer]");
+  if(r){if(!U)return needLogin("Please login to refer a customer");const b=await getBiz(r.dataset.refer);if(b)referral(b);return}
+  const st=e.target.closest("[data-st]");
+  if(st){const [id,v]=st.dataset.st.split("|");st.disabled=true;try{await fb.updateDoc(dref("referrals",id),{status:v,t2:Date.now()});toast("Updated");route(true)}catch(x){toast(friendly(x));st.disabled=false}return}
+  const rp=e.target.closest("[data-report]");
+  if(rp){if(!U)return needLogin("Please login to report");const b=await getBiz(rp.dataset.report),why=prompt("What is wrong with this business?");
+    if(why&&why.trim()){try{await fb.addDoc(col("reports"),{bizId:b.id,name:b.name,why:why.trim().slice(0,400),by:U.uid,t:Date.now()});toast("Thank you. The admin will check.")}catch(x){toast(friendly(x))}}return}
+  const ad=e.target.closest("[data-ad]");
+  if(ad){const [a,id]=ad.dataset.ad.split("|");
+    try{
+      if(a==="rep")await fb.deleteDoc(dref("reports",id));
+      if(a==="ok")await fb.updateDoc(dref("businesses",id),{status:"approved"});
+      if(a==="star"){const b=await getBiz(id);await fb.updateDoc(dref("businesses",id),{featured:!b.featured})}
+      if(a==="del"){if(!confirm("Remove this business?"))return;await fb.deleteDoc(dref("businesses",id))}
+      bust();toast("Done");route(true);
+    }catch(x){toast(friendly(x))}
+  }
+});
+
+function referral(b){
+  const m=modal(`<h2>Refer a customer to<br>${esc(b.name)}</h2>
+   <div class="money" style="margin:8px 0"><small>You earn</small><b style="font-size:1.35rem">${esc(earnText(b))}</b></div>
+   <label>Customer's name</label><input id="rn" maxlength="60" placeholder="Who are you referring?">
+   <label>Customer's phone <small>(optional)</small></label><input id="rp" type="tel" inputmode="numeric" maxlength="10">
+   <label class="check" style="margin-top:14px"><input type="checkbox" id="rcb"><span>My customer agrees to share their name with this business.</span></label>
+   <p class="err" id="re"></p>
+   <button class="btn g big" id="rg">Get my referral code</button>`);
+  $("#rg",m).onclick=async()=>{
+    const n=$("#rn",m).value.trim(),ph=$("#rp",m).value.trim(),er=$("#re",m);
+    if(n.length<2)return er.textContent="Please write the customer's name.";
+    if(ph&&!/^\d{10}$/.test(ph))return er.textContent="Phone must be 10 digits, or leave it empty.";
+    if(!$("#rcb",m).checked)return er.textContent="Please tick the box. The customer must agree.";
+    const btn=$("#rg",m);btn.disabled=true;btn.textContent="Please wait…";
+    const code=mkCode(U.uid,b.id);
+    try{
+      await fb.addDoc(col("referrals"),{bizId:b.id,bizName:b.name,bizPhone:b.phone,workerUid:U.uid,workerName:P.name,workerPhone:P.phone,customer:n,cphone:ph,code,status:"sent",t:Date.now()});
+    }catch(x){er.textContent=friendly(x);btn.disabled=false;btn.textContent="Get my referral code";return}
+    m.querySelector(".m").innerHTML=`<button class="x">×</button><h2>✅ Done!</h2><p>Tell <b>${esc(b.name)}</b> this code. It proves <b>you</b> sent ${esc(n)}.</p><div class="code">${esc(code)}</div>
+      <a class="btn g big" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I referred "+n+" to you. My BusinessConnect code is "+code+".")}">💬 Send code on WhatsApp</a>
+      <a class="btn o big" style="margin-top:10px" href="#/refs" id="seeR">See my referrals</a>`;
+    $("#seeR",m).onclick=()=>m.close();
+  };
+}
+
+// ============ header buttons & theme ============
+$("#sb").onclick=()=>{$("#sp").classList.toggle("on");if($("#sp").classList.contains("on"))$("#sq").focus()};
+$("#sp").onsubmit=e=>{e.preventDefault();const v=$("#sq").value.trim();$("#sp").classList.remove("on");location.hash="#/list"+(v?"?q="+encodeURIComponent(v):"")};
+let theme="light";try{theme=localStorage.getItem("bc_theme")||(matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light")}catch{}
+const setTheme=t=>{document.documentElement.dataset.theme=t;$("#tb").textContent=t==="dark"?"☀️":"🌙";$('meta[name=theme-color]').content=t==="dark"?"#0d1621":"#1565c0"};
+setTheme(theme);
+$("#tb").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("bc_theme",theme)}catch{}setTheme(theme)};
+
+// ============ start ============
+(async()=>{
+  try{
+    const base=`https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
+    const [a,au,fs]=await Promise.all([import(base+"firebase-app.js"),import(base+"firebase-auth.js"),import(base+"firebase-firestore.js")]);
+    const fapp=a.initializeApp(firebaseConfig);
+    auth=au.getAuth(fapp);auth.languageCode="en";db=fs.getFirestore(fapp);fb={...au,...fs};
+  }catch(e){
+    console.error(e);
+    app.innerHTML=`<div class="empty"><b>⚠️ Could not connect</b><p class="muted small">Please check your internet and open the page again.</p><button class="btn" onclick="location.reload()">Try again</button></div>`;
+    return;
+  }
+  fb.onAuthStateChanged(auth,async user=>{
+    U=user;P=null;ADMIN=false;SAVED=new Set();
+    if(user){
+      try{const s=await fb.getDoc(dref("users",user.uid));P=s.exists()?s.data():null}catch(e){console.error(e)}
+      if(P)await loadExtras();
+    }
+    READY=true;
+    if(user&&P&&location.hash.startsWith("#/login")){const n=NEXT||"#/";NEXT=null;location.hash=n;return}
+    route();
+  });
+})();
+</script>
+</body>
+</html>
