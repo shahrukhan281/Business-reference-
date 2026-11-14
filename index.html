@@ -113,7 +113,7 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 .pre{flex:none;background:var(--soft);border:1.5px solid var(--line);border-radius:12px;padding:13px;font-weight:700}
 .spin{width:36px;height:36px;border:4px solid var(--blue-l);border-top-color:var(--blue);border-radius:50%;margin:40px auto 10px;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
-</style><style>[hidden]{display:none!important}</style>
+</style><style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
 <body>
 <header><div class="wrap">
@@ -134,7 +134,6 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
   <a href="#/me" data-t="me"><i>👤</i>Account</a>
 </nav>
 <div id="toast"><span></span></div>
-<div id="rc"></div>
 
 <script type="module">
 // ============ Firebase settings (these are public web settings, safe to keep here) ============
@@ -175,7 +174,9 @@ function friendly(e){
   if(c.includes("too-many-requests"))return "Too many tries. Please wait a few minutes.";
   if(c.includes("invalid-verification-code"))return "Wrong code. Please check and try again.";
   if(c.includes("code-expired"))return "This code has expired. Please ask for a new one.";
-  if(c.includes("billing-not-enabled")||c.includes("quota-exceeded"))return "Real SMS is not switched on yet. Use the test number saved in Firebase.";
+  if(c.includes("operation-not-allowed"))return "Google login is not switched on yet. Firebase → Authentication → Sign-in method → Google → Enable.";
+  if(c.includes("popup-blocked"))return "Your browser blocked the login window. Please allow pop-ups for this site and try again.";
+  if(c.includes("already been rendered"))return "Please try again.";
   if(c.includes("unauthorized-domain")||c.includes("captcha"))return "This website address is not allowed yet. Add it in Firebase → Authentication → Settings → Authorized domains.";
   if(c.includes("permission-denied"))return "You are not allowed to do this. Please login again.";
   if(c.includes("network"))return "No internet. Please try again.";
@@ -332,7 +333,7 @@ pages.me=async()=>{
   const b=await getBiz(U.uid);
   const [mine,inc]=await Promise.all([listRefs("workerUid"),b?listRefs("bizId"):[]]);
   return `<h1>Account</h1>
-  <div class="card pad row between"><div><h3>${esc(P.name)}</h3><p class="muted small" style="margin:0">+91 ${esc(P.phone)}${P.city?" · "+esc(P.city):""}</p></div><button class="btn o s" id="rename">Change name</button></div>
+  <div class="card pad row between"><div><h3>${esc(P.name)}</h3><p class="muted small" style="margin:0">+91 ${esc(P.phone)}${P.city?" · "+esc(P.city):""}</p>${P.email?`<p class="muted small" style="margin:0">${esc(P.email)}</p>`:""}</div><button class="btn o s" id="rename">Edit</button></div>
   <div class="stat" style="margin:12px 0"><div><b>${mine.length}</b><span>I referred</span></div><div><b>${mine.filter(r=>r.status==="paid").length}</b><span>Paid to me</span></div><div><b>${inc.length}</b><span>To my shop</span></div></div>
   <div class="card list">
     <a href="#/saved"><span class="ic">♥</span>Saved businesses<span class="go">›</span></a>
@@ -394,49 +395,41 @@ pages.admin=async()=>{
   <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}`;
 };
 
-// ---------- login ----------
-const loginPage=(why)=>`<div class="card pad" style="margin-top:16px"><h1>Login</h1>
-  <p class="muted">${why||"Use your mobile number. We send a code by SMS. It is free."}</p>
-  <div id="s1"><label>Mobile number</label><div class="row" style="flex-wrap:nowrap"><span class="pre">+91</span><input id="ph" type="tel" inputmode="numeric" maxlength="10" placeholder="10-digit number" autocomplete="tel-national"></div>
-   <p class="err" id="e1"></p><button class="btn g big" id="send">Send code</button></div>
-  <div id="s2" hidden><label>Enter the 6-digit code sent to <b id="shown"></b></label><input id="otp" type="text" inputmode="numeric" maxlength="6" placeholder="• • • • • •" autocomplete="one-time-code">
-   <p class="err" id="e2"></p><button class="btn g big" id="verify">Verify and continue</button>
-   <p class="small" style="margin-top:12px"><a href="#" id="chg">Change number</a></p></div>
-  <div class="note">New here? No problem. Your account is made automatically after the code is checked.</div></div>`;
-let confirmation=null,verifier=null;
+// ---------- login (Google only) ----------
+const GLOGO=`<svg width="22" height="22" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>`;
+const loginPage=(why)=>`<div class="card pad" style="margin-top:16px;text-align:center"><h1>Login</h1>
+  <p class="muted">${why||"Login with your Google account. It is free."}</p>
+  <button class="btn big gbtn" id="gbtn">${GLOGO}<span>Continue with Google</span></button>
+  <p class="err" id="e1"></p>
+  <div class="note" style="text-align:left">New here? No problem. Your account is made automatically the first time you login.</div></div>`;
 function bindLogin(){
-  if(!$("#send"))return;
-  $("#send").onclick=async()=>{
-    const ph=$("#ph").value.replace(/\D/g,""),e1=$("#e1");e1.textContent="";
-    if(!/^[6-9]\d{9}$/.test(ph))return e1.textContent="Please write a correct 10-digit mobile number.";
-    const btn=$("#send");btn.disabled=true;btn.textContent="Sending…";
-    try{
-      if(!verifier)verifier=new fb.RecaptchaVerifier(auth,"rc",{size:"invisible"});
-      confirmation=await fb.signInWithPhoneNumber(auth,"+91"+ph,verifier);
-      $("#shown").textContent="+91 "+ph;$("#s1").hidden=true;$("#s2").hidden=false;$("#otp").focus();
-    }catch(e){e1.textContent=friendly(e);try{verifier&&verifier.clear()}catch{}verifier=null}
-    btn.disabled=false;btn.textContent="Send code";
-  };
-  $("#chg").onclick=e=>{e.preventDefault();$("#s2").hidden=true;$("#s1").hidden=false};
-  $("#verify").onclick=async()=>{
-    const c=$("#otp").value.trim(),e2=$("#e2");e2.textContent="";
-    if(!/^\d{6}$/.test(c))return e2.textContent="Please write the 6-digit code.";
-    const btn=$("#verify");btn.disabled=true;btn.textContent="Checking…";
-    try{await confirmation.confirm(c)}catch(e){e2.textContent=friendly(e);btn.disabled=false;btn.textContent="Verify and continue"}
+  const b=$("#gbtn");if(!b)return;
+  b.onclick=async()=>{
+    const e1=$("#e1");e1.textContent="";b.disabled=true;
+    try{await fb.signInWithPopup(auth,new fb.GoogleAuthProvider())}
+    catch(e){
+      const c=(e&&e.code)||"";
+      e1.textContent=(c.includes("popup-closed")||c.includes("cancelled-popup"))?"Login was cancelled. Please try again.":friendly(e);
+      b.disabled=false;
+    }
   };
 }
-const setupPage=()=>`<div class="card pad" style="margin-top:16px"><h1>Welcome! 👋</h1><p class="muted">Just two details and you are ready.</p>
-  <form id="pf"><label>Your name</label><input name="name" maxlength="60" autocomplete="name"><label>Your city</label><input name="city" maxlength="40">
+const setupPage=()=>`<div class="card pad" style="margin-top:16px"><h1>Welcome! 👋</h1><p class="muted">Just three details and you are ready.</p>
+  <form id="pf"><label>Your name</label><input name="name" maxlength="60" autocomplete="name" value="${esc((U&&U.displayName)||"")}">
+  <label>Your city</label><input name="city" maxlength="40">
+  <label>Your mobile number <small>(shops and workers use it to contact you)</small></label>
+  <div class="row" style="flex-wrap:nowrap"><span class="pre">+91</span><input name="phone" type="tel" inputmode="numeric" maxlength="10" autocomplete="tel-national" placeholder="10-digit number"></div>
   <p class="err" id="pe"></p><button class="btn g big">Start</button></form></div>`;
 function bindSetup(){
   const f=$("#pf");if(!f)return;
   f.onsubmit=async e=>{
-    e.preventDefault();const d=new FormData(f),name=String(d.get("name")).trim(),city=String(d.get("city")).trim(),er=$("#pe");
+    e.preventDefault();const d=new FormData(f),name=String(d.get("name")).trim(),city=String(d.get("city")).trim(),phone=String(d.get("phone")).replace(/\D/g,""),er=$("#pe");
     if(name.length<2)return er.textContent="Please write your name.";
     if(city.length<2)return er.textContent="Please write your city.";
+    if(!/^[6-9]\d{9}$/.test(phone))return er.textContent="Please write a correct 10-digit mobile number.";
     const btn=f.querySelector("button");btn.disabled=true;
     try{
-      const data={name,city,phone:(U.phoneNumber||"").replace(/\D/g,"").slice(-10),createdAt:Date.now()};
+      const data={name,city,phone,email:U.email||"",createdAt:Date.now()};
       await fb.setDoc(dref("users",U.uid),data);P=data;await loadExtras();toast("Welcome, "+name+"!");
       if(NEXT){location.hash=NEXT;NEXT=null}
       route();
@@ -474,7 +467,12 @@ function bind(name){
   const lf=$("#lf");if(lf)lf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(lf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/list?"+p};
   const cf=$("#cityf");if(cf)cf.onchange=()=>{const p=new URLSearchParams(location.hash.split("?")[1]||"");cf.value?p.set("city",cf.value):p.delete("city");location.hash="#/list?"+p};
   const ef=$("#ef");if(ef)bindEdit(ef);
-  const rn=$("#rename");if(rn)rn.onclick=async()=>{const n=prompt("Your name",P.name);if(n&&n.trim()){try{await fb.updateDoc(dref("users",U.uid),{name:n.trim()});P.name=n.trim();route(true)}catch(e){toast(friendly(e))}}};
+  const rn=$("#rename");if(rn)rn.onclick=async()=>{
+    const n=prompt("Your name",P.name);if(n===null)return;
+    const ph=prompt("Your mobile number (10 digits)",P.phone);if(ph===null)return;
+    const nn=n.trim(),pp=ph.replace(/\D/g,"");
+    if(nn.length<2||!/^[6-9]\d{9}$/.test(pp))return toast("Name or number is not correct");
+    try{await fb.updateDoc(dref("users",U.uid),{name:nn,phone:pp});P.name=nn;P.phone=pp;toast("Saved");route(true)}catch(e){toast(friendly(e))}};
   const lo=$("#logout");if(lo)lo.onclick=async()=>{await fb.signOut(auth);toast("Logged out");location.hash="#/"};
   const ci=$("#copyid");if(ci)ci.onclick=e=>{e.preventDefault();(navigator.clipboard?navigator.clipboard.writeText(U.uid):Promise.reject()).then(()=>toast("ID copied"),()=>prompt("Copy your ID",U.uid))};
   const hd=$("#hide");if(hd)hd.onclick=async()=>{try{const b=await getBiz(U.uid);await fb.updateDoc(dref("businesses",U.uid),{status:b.status==="hidden"?"approved":"hidden"});bust();toast("Done");route(true)}catch(e){toast(friendly(e))}};
