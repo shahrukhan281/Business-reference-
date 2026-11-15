@@ -118,6 +118,18 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 .spin{width:36px;height:36px;border:4px solid var(--blue-l);border-top-color:var(--blue);border-radius:50%;margin:40px auto 10px;animation:sp 1s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
 
+
+/* compact business card */
+.biz{display:block}
+.biz .top{display:flex;gap:12px;padding:12px 12px 0;align-items:center}
+.biz .pic{flex:none;width:76px;height:76px;border-radius:14px;overflow:hidden;background:var(--soft)}
+.biz .pic img{width:100%;height:100%;object-fit:cover}
+.biz .inf{min-width:0;flex:1}
+.biz .inf h3{font-size:1.05rem;margin:0 0 2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.biz .inf .sub{margin:0 0 6px;font-size:.84rem;line-height:1.35}
+.biz .earn2{display:inline-block;background:var(--green-l);color:var(--green-d);font-weight:800;font-size:.82rem;padding:3px 10px;border-radius:99px;border:1px solid var(--green)}
+.biz .btns{padding:12px}
+.biz .btns .btn{padding:10px 14px;font-size:.95rem}
 </style><style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
 <body>
@@ -219,11 +231,12 @@ async function listRefs(field){
 function card(b){
   const sv=SAVED.has(b.id);
   return `<article class="card biz">
-    <a class="pic" href="#/biz/${esc(b.id)}"><img loading="lazy" src="${esc(imgOf(b))}" alt=""><span class="earn">💸 ${esc(earnShort(b))}</span></a>
-    <div class="b"><h3>${esc(b.name)}</h3>
-      <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
-      <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a><a class="btn g" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">Call</a><button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button></div>
-    </div></article>`;
+    <div class="top"><a class="pic" href="#/biz/${esc(b.id)}"><img loading="lazy" src="${esc(imgOf(b))}" alt=""></a>
+    <div class="inf"><h3>${esc(b.name)}</h3>
+      <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))}<br>📍 ${esc(b.area)}, ${esc(b.city)}</p>
+      <span class="earn2">💸 ${esc(earnShort(b))}</span></div></div>
+    <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a><a class="btn g" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">Call</a><button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button></div>
+  </article>`;
 }
 function refItem(r,tab){
   const lab=["Sent","Bought","Paid"],i=["sent","bought","paid"].indexOf(r.status);
@@ -576,8 +589,10 @@ function adminBulk(){
     if(out.length>200)return er.textContent="Please add up to 200 at a time.";
     const btn=$("#bg",m);btn.disabled=true;btn.textContent="Adding…";
     try{
-      const b=fb.writeBatch(db);out.forEach(d=>b.set(fb.doc(col("businesses")),d));await b.commit();
-      bust();m.close();toast(out.length+" businesses added");route(true);
+      const have=new Set(rows(await fb.getDocs(col("businesses"))).map(x=>x.phone+"|"+String(x.name).toLowerCase()));
+      const fresh=out.filter(d=>{const k=d.phone+"|"+d.name.toLowerCase();if(have.has(k))return false;have.add(k);return true});
+      if(fresh.length){const b=fb.writeBatch(db);fresh.forEach(d=>b.set(fb.doc(col("businesses")),d));await b.commit()}
+      bust();m.close();toast(fresh.length+" added"+(out.length>fresh.length?", "+(out.length-fresh.length)+" skipped (already there)":""));route(true);
     }catch(x){er.textContent=friendly(x);btn.disabled=false;btn.textContent="Add all"}
   };
 }
@@ -600,6 +615,8 @@ function adminAdd(){
     if(ct==="percent"&&cv>100)return er.textContent="Percent cannot be more than 100.";
     const btn=$("#ag",m);btn.disabled=true;
     try{
+      const dup=rows(await fb.getDocs(col("businesses"))).some(x=>x.phone===v("#ap")&&String(x.name).toLowerCase()===v("#an").toLowerCase());
+      if(dup){er.textContent="This business is already added.";btn.disabled=false;return}
       await fb.addDoc(col("businesses"),{name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,note:"",desc:"",img:"",ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
       bust();m.close();toast("Business added");route(true);
     }catch(x){er.textContent=friendly(x);btn.disabled=false}
