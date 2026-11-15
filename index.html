@@ -130,6 +130,20 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 .biz .earn2{display:inline-block;background:var(--green-l);color:var(--green-d);font-weight:800;font-size:.82rem;padding:3px 10px;border-radius:99px;border:1px solid var(--green)}
 .biz .btns{padding:12px}
 .biz .btns .btn{padding:10px 14px;font-size:.95rem}
+
+/* home like directory apps */
+.hsearch{display:flex;align-items:center;gap:8px;background:var(--card);border:2px solid var(--line);border-radius:14px;padding:6px 6px 6px 14px;margin:14px 0 4px;box-shadow:var(--shadow)}
+.hsearch input{border:0;padding:10px 4px;background:transparent;box-shadow:none}
+.hsearch input:focus{box-shadow:none}
+.cgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px 6px;margin:18px 0 8px}
+.ct{display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--ink);text-align:center}
+.ct .ci{width:56px;height:56px;border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:1.7rem;background:color-mix(in srgb,hsl(var(--h) 85% 55%) 17%,var(--card))}
+.ct .cn{font-size:.8rem;font-weight:600;line-height:1.2}
+.cgrid .more{display:none}.cgrid.all .more{display:flex}
+.promo{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:var(--blue-l);border-radius:18px;padding:16px;margin:16px 0}
+.promo h2{font-size:1.15rem;margin:0 0 2px;color:var(--ink)}
+.promo .pb{display:flex;gap:8px}
+.center{text-align:center}
 </style><style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
 <body>
@@ -262,22 +276,18 @@ const pages={};
 pages.home=async()=>{
   const l=await approved();
   const top=[...l].sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b)).slice(0,4);
-  const cats=[...new Set(l.map(b=>b.cat))];
+  const names=Object.keys(CATS);
+  const tile=(c,i)=>`<a class="ct${i>=11?" more":""}" href="#/list?cat=${encodeURIComponent(c)}"><span class="ci" style="--h:${(i*47)%360}">${CATS[c]}</span><span class="cn">${esc(catName(c))}</span></a>`;
   return `
-  <section class="hero">
-    <h1>Refer customers.<br>Earn commission.</h1>
-    <p>Tell people about local shops. When they buy, the shop pays you. It's <b>100% free</b>.</p>
-    <div class="two"><a class="btn w" href="#/list">💸 I want to EARN</a><a class="btn t" href="#/shop">🏪 I have a BUSINESS</a></div>
+  <form id="hs" class="hsearch"><span>🔍</span><input id="hq" type="search" placeholder="Search shop, service or city"><button class="btn g s">Search</button></form>
+  <div class="cgrid">${names.map(tile).join("")}<a class="ct showmore" href="#" onclick="this.parentNode.classList.toggle('all');this.querySelector('.cn').textContent=this.parentNode.classList.contains('all')?'Show Less':'Show More';return false"><span class="ci" style="--h:210">⌄</span><span class="cn">Show More</span></a></div>
+  <section class="promo">
+    <div><h2>Refer customers.<br>Earn commission.</h2><p class="small">Shops pay you directly. 100% free.</p></div>
+    <div class="pb"><a class="btn g s" href="#/list">💸 Earn</a><a class="btn o s" href="#/shop">🏪 List my shop</a></div>
   </section>
-  <div class="head"><h2>How it works</h2></div>
-  <div class="steps">
-    <div class="card step"><div class="num">1</div><div><h3>Pick a business</h3><p class="muted small">See how much commission each shop gives.</p></div></div>
-    <div class="card step"><div class="num">2</div><div><h3>Send your customer</h3><p class="muted small">Tap “I referred a customer”. You get a code.</p></div></div>
-    <div class="card step"><div class="num">3</div><div><h3>Get paid by the shop</h3><p class="muted small">When the customer buys, the shop pays you directly.</p></div></div>
-  </div>
-  ${cats.length?`<div class="head"><h2>Browse by type</h2></div><div class="chips">${cats.map(c=>`<a href="#/list?cat=${encodeURIComponent(c)}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>`:""}
   <div class="head"><h2>Popular businesses</h2>${l.length?`<a href="#/list"><b>See all →</b></a>`:""}</div>
   ${top.length?`<div class="grid">${top.map(card).join("")}</div>`:emptyBiz}
+  <p class="center small"><a href="#/help"><b>How does it work?</b></a></p>
   <div class="note">💡 The shop pays your commission <b>directly to you</b>. This app never touches your money and cannot promise earnings.</div>`;
 };
 
@@ -406,7 +416,7 @@ pages.admin=async()=>{
   const all=rows(bs).sort(lastOrder),reps=rows(rs).sort(lastOrder);
   const pend=all.filter(b=>b.status==="pending"),rest=all.filter(b=>b.status!=="pending");
   const row=b=>`<div class="card rc"><div class="row between"><h3>${esc(b.name)}</h3><span class="chip ${b.status==="approved"?"g":"w"}">${esc(b.status)}</span></div><p class="muted small" style="margin:2px 0">${esc(b.cat)} · ${esc(b.city)} · ${esc(b.owner)} · ${esc(b.phone)}</p>
-    <div class="row" style="margin-top:8px">${b.status!=="approved"?`<button class="btn g s" data-ad="ok|${esc(b.id)}">Approve</button>`:`<button class="btn o s" data-ad="star|${esc(b.id)}">${b.featured?"★ Unfeature":"☆ Feature"}</button>`}<a class="btn o s" href="#/biz/${esc(b.id)}">Open</a><button class="btn r s" data-ad="del|${esc(b.id)}">Remove</button></div></div>`;
+    <div class="row" style="margin-top:8px">${b.status!=="approved"?`<button class="btn g s" data-ad="ok|${esc(b.id)}">Approve</button>`:`<button class="btn o s" data-ad="star|${esc(b.id)}">${b.featured?"★ Unfeature":"☆ Feature"}</button>`}<a class="btn o s" href="#/biz/${esc(b.id)}">Open</a><button class="btn o s" data-ad="edit|${esc(b.id)}">✏️ Edit</button><button class="btn r s" data-ad="del|${esc(b.id)}">Remove</button></div></div>`;
   return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
   <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
   <button class="btn g big" data-ad="add|x" style="margin:10px 0 6px">➕ Add a business myself</button>
@@ -485,6 +495,7 @@ async function route(keep){
 window.addEventListener("hashchange",()=>route());
 
 function bind(name){
+  const hs=$("#hs");if(hs)hs.onsubmit=e=>{e.preventDefault();const v=$("#hq").value.trim();location.hash="#/list"+(v?"?q="+encodeURIComponent(v):"")};
   const lf=$("#lf");if(lf)lf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(lf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/list?"+p};
   const cf=$("#cityf");if(cf)cf.onchange=()=>{const p=new URLSearchParams(location.hash.split("?")[1]||"");cf.value?p.set("city",cf.value):p.delete("city");location.hash="#/list?"+p};
   const ef=$("#ef");if(ef)bindEdit(ef);
@@ -554,6 +565,7 @@ document.addEventListener("click",async e=>{
   if(ad){const [a,id]=ad.dataset.ad.split("|");
     if(a==="add")return adminAdd();
     if(a==="bulk")return adminBulk();
+    if(a==="edit"){const eb=await getBiz(id);return eb&&adminAdd(eb)}
     try{
       if(a==="rep")await fb.deleteDoc(dref("reports",id));
       if(a==="ok")await fb.updateDoc(dref("businesses",id),{status:"approved"});
@@ -597,16 +609,19 @@ function adminBulk(){
   };
 }
 
-function adminAdd(){
-  const m=modal(`<h2>Add a business</h2><p class="muted small">It goes live at once. The shop owner is not linked, so you manage it from Admin.</p>
-   <label>Business name</label><input id="an" maxlength="70">
-   <label>What do they sell?</label><select id="ac"><option value="">Choose one</option>${Object.keys(CATS).map(c=>`<option>${esc(c)}</option>`).join("")}</select>
-   <label>Owner name</label><input id="ao" maxlength="60">
-   <label>Mobile / WhatsApp (10 digits)</label><input id="ap" type="tel" inputmode="numeric" maxlength="10">
-   <label>City</label><input id="ay" maxlength="40"><label>Area</label><input id="aa" maxlength="50">
-   <label>Commission</label><select id="at"><option value="percent">Percent (%)</option><option value="fixed">Fixed (₹)</option><option value="talk">Talk to owner</option></select>
-   <input id="av" type="number" min="0" step="any" placeholder="Amount (example 10 or 500)">
-   <p class="err" id="ae"></p><button class="btn g big" id="ag">Add business</button>`);
+function adminAdd(ex){
+  const X=ex||{},ev=k=>esc(X[k]??"");
+  const m=modal(`<h2>${ex?"Edit business":"Add a business"}</h2>${ex?"":`<p class="muted small">It goes live at once. The shop owner is not linked, so you manage it from Admin.</p>`}
+   <label>Business name</label><input id="an" maxlength="70" value="${ev("name")}">
+   <label>What do they sell?</label><select id="ac"><option value="">Choose one</option>${Object.keys(CATS).map(c=>`<option ${X.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+   <label>Owner name</label><input id="ao" maxlength="60" value="${ev("owner")}">
+   <label>Mobile / WhatsApp (10 digits)</label><input id="ap" type="tel" inputmode="numeric" maxlength="10" value="${ev("phone")}">
+   <label>City</label><input id="ay" maxlength="40" value="${ev("city")}"><label>Area</label><input id="aa" maxlength="50" value="${ev("area")}">
+   <label>About <small>(optional)</small></label><textarea id="ad" rows="2" maxlength="400">${ev("desc")}</textarea>
+   <label>Photo <small>(optional)</small></label><input id="aph" type="file" accept="image/*">
+   <label>Commission</label><select id="at"><option value="percent" ${X.ct==="percent"?"selected":""}>Percent (%)</option><option value="fixed" ${X.ct==="fixed"?"selected":""}>Fixed (₹)</option><option value="talk" ${X.ct==="talk"?"selected":""}>Talk to owner</option></select>
+   <input id="av" type="number" min="0" step="any" placeholder="Amount (example 10 or 500)" value="${X.cv?esc(X.cv):""}">
+   <p class="err" id="ae"></p><button class="btn g big" id="ag">${ex?"Save changes":"Add business"}</button>`);
   $("#ag",m).onclick=async()=>{
     const v=i=>$(i,m).value.trim(),er=$("#ae",m),ct=v("#at"),cv=+v("#av");
     if(!v("#an")||!v("#ac")||!v("#ao")||!v("#ay")||!v("#aa"))return er.textContent="Please fill all the details.";
@@ -615,9 +630,12 @@ function adminAdd(){
     if(ct==="percent"&&cv>100)return er.textContent="Percent cannot be more than 100.";
     const btn=$("#ag",m);btn.disabled=true;
     try{
+      const base={name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,desc:v("#ad")};
+      const pf=$("#aph",m).files[0];if(pf)base.img=await shrink(pf);
+      if(ex){await fb.updateDoc(dref("businesses",ex.id),{...base,upd:Date.now()});bust();m.close();toast("Saved");route(true);return}
       const dup=rows(await fb.getDocs(col("businesses"))).some(x=>x.phone===v("#ap")&&String(x.name).toLowerCase()===v("#an").toLowerCase());
       if(dup){er.textContent="This business is already added.";btn.disabled=false;return}
-      await fb.addDoc(col("businesses"),{name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,note:"",desc:"",img:"",ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
+      await fb.addDoc(col("businesses"),{note:"",img:"",...base,ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
       bust();m.close();toast("Business added");route(true);
     }catch(x){er.textContent=friendly(x);btn.disabled=false}
   };
