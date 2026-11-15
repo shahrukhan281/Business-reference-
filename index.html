@@ -144,6 +144,21 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 .promo h2{font-size:1.15rem;margin:0 0 2px;color:var(--ink)}
 .promo .pb{display:flex;gap:8px}
 .center{text-align:center}
+
+/* clean look: one accent colour */
+:root{--green:#1565c0;--green-d:#0d47a1;--green-l:#e8f0fb}
+[data-theme=dark]{--green:#5aa5f7;--green-d:#8fc0fa;--green-l:#17304f}
+.logo{color:var(--ink)}.logo b{color:var(--blue)}
+.ct .ci{background:var(--soft)}
+.promo{background:var(--soft)}
+.btn.g{color:#fff}[data-theme=dark] .btn,[data-theme=dark] .btn.g{color:#0d1621}[data-theme=dark] .btn.o{color:var(--blue)}
+.biz .earn2{background:transparent;border:0;padding:0;color:var(--ink);font-weight:700}
+.nwl{display:flex;flex-direction:column}
+.nw{display:block;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink)}
+.nw b{display:block;font-size:.98rem;line-height:1.35;font-weight:600}
+.nw span{display:block;color:var(--muted);font-size:.8rem;margin-top:3px}
+.svc{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
+.svc:last-child{border:0}
 </style><style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
 <body>
@@ -186,13 +201,28 @@ const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Cl
 const SHORT={"Clothing and Fashion":"Fashion","Restaurants and Hotels":"Food & Hotels","Healthcare Services":"Health","Wholesale and Retail":"Wholesale","Financial Services":"Finance","Travel and Tourism":"Travel","Event Management":"Events"};
 const catName=c=>SHORT[c]||c;
 const art=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='400' height='300' fill='url(#g)'/><text x='200' y='195' font-size='120' text-anchor='middle'>${e}</text></svg>`);
-const imgOf=b=>b.img||art(CATS[b.cat]||"🏪","#1565c0","#1b9e5a");
+const imgOf=b=>b.img||art(CATS[b.cat]||"🏪","#eef3f8","#dbe6f2");
 const toast=m=>{const t=$("#toast");t.firstElementChild.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),3000)};
 const earnText=b=>b.ct==="percent"?`${b.cv}% commission`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")} per customer`:"Talk to owner";
 const earnShort=b=>b.ct==="percent"?`${b.cv}%`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")}`:"Negotiable";
 const wa=(p,t="")=>`https://wa.me/91${p}${t?"?text="+encodeURIComponent(t):""}`;
 const fmtD=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
 const spin=()=>`<div class="spin"></div>`;
+const tagsOf=b=>String(b.tags||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,8);
+const svcOf=b=>String(b.svc||"").split("\n").map(x=>x.trim()).filter(Boolean).slice(0,12).map(l=>{const m=l.match(/^(.*\S)\s+[-–—]\s+(.+)$/);return m?[m[1],m[2]]:[l,""]});
+const imgsOf=b=>(b.imgs&&b.imgs.length)?b.imgs:[imgOf(b)];
+const ago=d=>{const t=new Date(String(d).replace(" ","T")+(/Z|\+/.test(d)?"":"Z")).getTime();if(!t)return"";const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
+const NEWSF={biz:"https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-IN&gl=IN&ceid=IN:en",msme:"https://news.google.com/rss/search?q=MSME+OR+%22small+business%22+India+when:7d&hl=en-IN&gl=IN&ceid=IN:en"};
+async function getNews(k){
+  const key="bcnews_"+k;
+  try{const c=JSON.parse(sessionStorage.getItem(key)||"null");if(c&&Date.now()-c.t<18e5)return c.items}catch{}
+  const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(NEWSF[k]));const j=await r.json();
+  if(j.status!=="ok")throw new Error("news");
+  const items=j.items.slice(0,20).map(i=>{const m=i.title.match(/^(.*) - ([^-]+)$/);return{t:m?m[1]:i.title,s:m?m[2]:"",u:i.link,d:i.pubDate}});
+  try{sessionStorage.setItem(key,JSON.stringify({t:Date.now(),items}))}catch{}
+  return items;
+}
+const newsHtml=(l,n)=>l.slice(0,n).map(x=>`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener"><b>${esc(x.t)}</b><span>${esc(x.s)}${x.s?" · ":""}${esc(ago(x.d))}</span></a>`).join("");
 const lastOrder=(a,b)=>(b.t||0)-(a.t||0);
 
 // one code per worker + business pair (always the same for the same pair)
@@ -281,20 +311,27 @@ pages.home=async()=>{
   return `
   <form id="hs" class="hsearch"><span>🔍</span><input id="hq" type="search" placeholder="Search shop, service or city"><button class="btn g s">Search</button></form>
   <div class="cgrid">${names.map(tile).join("")}<a class="ct showmore" href="#" onclick="this.parentNode.classList.toggle('all');this.querySelector('.cn').textContent=this.parentNode.classList.contains('all')?'Show Less':'Show More';return false"><span class="ci" style="--h:210">⌄</span><span class="cn">Show More</span></a></div>
+  ${(()=>{const c={};l.forEach(b=>tagsOf(b).forEach(t=>{const k=t.toLowerCase();c[k]=(c[k]||0)+1}));const k=Object.keys(c).sort((a,b)=>c[b]-c[a]).slice(0,10);return k.length?`<div class="head" style="margin-top:14px"><h2>Popular searches</h2></div><div class="chips">${k.map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div>`:""})()}
   <section class="promo">
     <div><h2>Refer customers.<br>Earn commission.</h2><p class="small">Shops pay you directly. 100% free.</p></div>
     <div class="pb"><a class="btn g s" href="#/list">💸 Earn</a><a class="btn o s" href="#/shop">🏪 List my shop</a></div>
   </section>
   <div class="head"><h2>Popular businesses</h2>${l.length?`<a href="#/list"><b>See all →</b></a>`:""}</div>
   ${top.length?`<div class="grid">${top.map(card).join("")}</div>`:emptyBiz}
+  <div class="head"><h2>Latest news</h2><a href="#/news"><b>See all →</b></a></div>
+  <div id="nh" class="nwl"><p class="muted small">Loading news…</p></div>
   <p class="center small"><a href="#/help"><b>How does it work?</b></a></p>
   <div class="note">💡 The shop pays your commission <b>directly to you</b>. This app never touches your money and cannot promise earnings.</div>`;
 };
 
+pages.news=async(q)=>{
+  const k=q.get("t")==="msme"?"msme":"biz";
+  return `<h1>News</h1><div class="chips"><a class="${k==="biz"?"on":""}" href="#/news">Business</a><a class="${k==="msme"?"on":""}" href="#/news?t=msme">Small business</a></div><div id="nl" class="nwl"><p class="muted small">Loading news…</p></div>`;
+};
 pages.list=async(q)=>{
   const f={q:q.get("q")||"",cat:q.get("cat")||"",city:q.get("city")||""};
   const l=await approved(),cities=[...new Set(l.map(b=>b.city))].sort(),cats=[...new Set(l.map(b=>b.cat))];
-  const hit=b=>(!f.cat||b.cat===f.cat)&&(!f.city||b.city===f.city)&&(!f.q||f.q.toLowerCase().split(/\s+/).every(w=>[b.name,b.cat,b.desc,b.city,b.area,earnText(b)].join(" ").toLowerCase().includes(w)));
+  const hit=b=>(!f.cat||b.cat===f.cat)&&(!f.city||b.city===f.city)&&(!f.q||f.q.toLowerCase().split(/\s+/).every(w=>[b.name,b.cat,b.desc,b.tags,b.svc,b.city,b.area,earnText(b)].join(" ").toLowerCase().includes(w)));
   const res=l.filter(hit).sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b));
   const link=o=>"#/list?"+new URLSearchParams(Object.fromEntries(Object.entries({...f,...o}).filter(([,v])=>v))).toString();
   return `<h1>Businesses</h1>
@@ -312,14 +349,16 @@ pages.biz=async(q,id)=>{
   const sv=SAVED.has(b.id);
   return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
   ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
-  <div class="gal"><img src="${esc(imgOf(b))}" alt=""></div>
+  <div class="gal">${imgsOf(b).map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>
   <h1 style="margin-top:12px">${esc(b.name)}</h1>
   <p class="muted">${CATS[b.cat]||"🏪"} ${esc(b.cat)} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
   <div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>
   ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`
   :`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>
    <div class="rowbtn"><a class="btn" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect and want to refer a customer.")}">💬 WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">📞 Call</a></div>`}
-  <div class="card pad" style="margin-top:6px"><h3>About</h3><p>${esc(b.desc||"—")}</p><p class="muted small">Owner: ${esc(b.owner)}</p></div>
+  ${tagsOf(b).length?`<div class="chips" style="margin-top:10px">${tagsOf(b).map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div>`:""}
+  ${svcOf(b).length?`<div class="card pad" style="margin-top:12px"><h3>Services</h3>${svcOf(b).map(([n,p])=>`<div class="svc"><span>${esc(n)}</span><b>${esc(p)}</b></div>`).join("")}</div>`:""}
+  <div class="card pad" style="margin-top:12px"><h3>About</h3><p>${esc(b.desc||"—")}</p><p class="muted small">Owner: ${esc(b.owner)}</p></div>
   <div class="card pad" style="margin-top:12px"><h3>How to earn here</h3>
    <p>1. Tell your customer about this shop.<br>2. Tap “I referred a customer” and write their name.<br>3. Tell the shop your code. When the customer buys, the shop pays you.</p></div>
   <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>
@@ -401,8 +440,10 @@ pages.edit=async()=>{
     <div id="cvw"><label id="cvl">Amount</label><input name="cv" type="number" min="0" step="any" value="${esc(b.cv)}"></div>
     <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="Example: Paid within 7 days after the customer pays.">${esc(b.note)}</textarea>
     <label>About your business <small>(optional)</small></label><textarea name="desc" rows="3" maxlength="400">${esc(b.desc)}</textarea>
-    <label>Photo <small>(optional)</small></label><input type="file" name="photo" accept="image/*">
-    ${b.img?`<div class="thumbs"><img src="${esc(b.img)}" alt="" style="width:80px;height:80px;object-fit:cover;border-radius:12px;margin-top:8px"></div>`:""}
+    <label>Keywords <small>(help people find you, separate with commas)</small></label><input name="tags" maxlength="160" placeholder="Example: thai massage, spa, body massage" value="${esc(b.tags)}">
+    <label>Services you offer <small>(optional, one per line, price after a dash)</small></label><textarea name="svc" rows="4" maxlength="600" placeholder="Thai massage - ₹1500&#10;Foot massage - ₹800">${esc(b.svc)}</textarea>
+    <label>Photos <small>(up to 4, optional)</small></label><input type="file" name="photo" accept="image/*" multiple>
+    ${(b.imgs&&b.imgs.length?b.imgs:(b.img?[b.img]:[])).length?`<div class="row" style="margin-top:8px">${(b.imgs&&b.imgs.length?b.imgs:[b.img]).map(i=>`<img src="${esc(i)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px">`).join("")}</div><label class="check" style="margin-top:8px"><input type="checkbox" name="rmph"><span>Remove these photos</span></label>`:""}
     <label class="check" style="margin-top:16px"><input type="checkbox" name="ok" ${ed?"checked":""}><span>I agree to show my business name and phone number to everyone.</span></label>
     <p class="err" id="ee"></p>
     <button class="btn g big">${ed?"Save changes":"Send my business (free)"}</button>
@@ -494,7 +535,15 @@ async function route(keep){
 }
 window.addEventListener("hashchange",()=>route());
 
+async function loadNews(){
+  const nh=$("#nh"),nl=$("#nl");
+  if(!nh&&!nl)return;
+  const k=nl&&/t=msme/.test(location.hash)?"msme":"biz";
+  try{const l=await getNews(k);const h=newsHtml(l,nl?20:4);const box=$("#nh")||$("#nl");if(box)box.innerHTML=h||`<p class="muted small">No news now.</p>`}
+  catch{const box=$("#nh")||$("#nl");if(box)box.innerHTML=`<p class="muted small">News could not load. Please try again later.</p>`}
+}
 function bind(name){
+  loadNews();
   const hs=$("#hs");if(hs)hs.onsubmit=e=>{e.preventDefault();const v=$("#hq").value.trim();location.hash="#/list"+(v?"?q="+encodeURIComponent(v):"")};
   const lf=$("#lf");if(lf)lf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(lf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/list?"+p};
   const cf=$("#cityf");if(cf)cf.onchange=()=>{const p=new URLSearchParams(location.hash.split("?")[1]||"");cf.value?p.set("city",cf.value):p.delete("city");location.hash="#/list?"+p};
@@ -528,8 +577,9 @@ function bindEdit(form){
     if(!f.get("ok"))return fail("Please tick the box to agree.");
     const btn=form.querySelector(".big");btn.disabled=true;btn.textContent="Saving…";
     try{
-      const data={name:g("name"),cat:g("cat"),owner:g("owner"),phone:g("phone"),city:g("city"),area:g("area"),ct,cv:ct==="talk"?0:cv,note:g("note"),desc:g("desc")};
-      const p=f.get("photo");if(p&&p.size)data.img=await shrink(p);
+      const data={name:g("name"),cat:g("cat"),owner:g("owner"),phone:g("phone"),city:g("city"),area:g("area"),ct,cv:ct==="talk"?0:cv,note:g("note"),desc:g("desc"),tags:g("tags"),svc:g("svc")};
+      const files=f.getAll("photo").filter(x=>x&&x.size).slice(0,4);
+      if(files.length){data.imgs=await Promise.all(files.map(shrink));data.img=data.imgs[0]}else if(f.get("rmph")){data.imgs=[];data.img=""}
       const ex=await getBiz(U.uid);
       if(ex)await fb.updateDoc(dref("businesses",U.uid),{...data,upd:Date.now()});
       else await fb.setDoc(dref("businesses",U.uid),{img:"",...data,ownerUid:U.uid,status:"pending",featured:false,t:Date.now()});
@@ -618,7 +668,9 @@ function adminAdd(ex){
    <label>Mobile / WhatsApp (10 digits)</label><input id="ap" type="tel" inputmode="numeric" maxlength="10" value="${ev("phone")}">
    <label>City</label><input id="ay" maxlength="40" value="${ev("city")}"><label>Area</label><input id="aa" maxlength="50" value="${ev("area")}">
    <label>About <small>(optional)</small></label><textarea id="ad" rows="2" maxlength="400">${ev("desc")}</textarea>
-   <label>Photo <small>(optional)</small></label><input id="aph" type="file" accept="image/*">
+   <label>Keywords <small>(commas)</small></label><input id="atg" maxlength="160" value="${ev("tags")}">
+   <label>Services <small>(one per line: name - price)</small></label><textarea id="asv" rows="3" maxlength="600">${ev("svc")}</textarea>
+   <label>Photo <small>(optional)</small></label><input id="aph" type="file" accept="image/*" multiple>
    <label>Commission</label><select id="at"><option value="percent" ${X.ct==="percent"?"selected":""}>Percent (%)</option><option value="fixed" ${X.ct==="fixed"?"selected":""}>Fixed (₹)</option><option value="talk" ${X.ct==="talk"?"selected":""}>Talk to owner</option></select>
    <input id="av" type="number" min="0" step="any" placeholder="Amount (example 10 or 500)" value="${X.cv?esc(X.cv):""}">
    <p class="err" id="ae"></p><button class="btn g big" id="ag">${ex?"Save changes":"Add business"}</button>`);
@@ -630,8 +682,8 @@ function adminAdd(ex){
     if(ct==="percent"&&cv>100)return er.textContent="Percent cannot be more than 100.";
     const btn=$("#ag",m);btn.disabled=true;
     try{
-      const base={name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,desc:v("#ad")};
-      const pf=$("#aph",m).files[0];if(pf)base.img=await shrink(pf);
+      const base={name:v("#an"),cat:v("#ac"),owner:v("#ao"),phone:v("#ap"),city:v("#ay"),area:v("#aa"),ct,cv:ct==="talk"?0:cv,desc:v("#ad"),tags:v("#atg"),svc:v("#asv")};
+      const pf=[...$("#aph",m).files].slice(0,4);if(pf.length){base.imgs=await Promise.all(pf.map(shrink));base.img=base.imgs[0]}
       if(ex){await fb.updateDoc(dref("businesses",ex.id),{...base,upd:Date.now()});bust();m.close();toast("Saved");route(true);return}
       const dup=rows(await fb.getDocs(col("businesses"))).some(x=>x.phone===v("#ap")&&String(x.name).toLowerCase()===v("#an").toLowerCase());
       if(dup){er.textContent="This business is already added.";btn.disabled=false;return}
