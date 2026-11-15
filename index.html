@@ -396,7 +396,8 @@ pages.admin=async()=>{
     <div class="row" style="margin-top:8px">${b.status!=="approved"?`<button class="btn g s" data-ad="ok|${esc(b.id)}">Approve</button>`:`<button class="btn o s" data-ad="star|${esc(b.id)}">${b.featured?"★ Unfeature":"☆ Feature"}</button>`}<a class="btn o s" href="#/biz/${esc(b.id)}">Open</a><button class="btn r s" data-ad="del|${esc(b.id)}">Remove</button></div></div>`;
   return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
   <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
-  <button class="btn g big" data-ad="add|x" style="margin:10px 0">➕ Add a business myself</button>
+  <button class="btn g big" data-ad="add|x" style="margin:10px 0 6px">➕ Add a business myself</button>
+  <button class="btn o big" data-ad="bulk|x" style="margin:0 0 10px">📥 Add many at once</button>
   <div class="head"><h2>⏳ Waiting for approval</h2></div>${pend.length?pend.map(row).join(""):`<p class="muted">Nothing waiting.</p>`}
   <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div>`).join(""):`<p class="muted">No reports.</p>`}
   <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}`;
@@ -539,6 +540,7 @@ document.addEventListener("click",async e=>{
   const ad=e.target.closest("[data-ad]");
   if(ad){const [a,id]=ad.dataset.ad.split("|");
     if(a==="add")return adminAdd();
+    if(a==="bulk")return adminBulk();
     try{
       if(a==="rep")await fb.deleteDoc(dref("reports",id));
       if(a==="ok")await fb.updateDoc(dref("businesses",id),{status:"approved"});
@@ -548,6 +550,37 @@ document.addEventListener("click",async e=>{
     }catch(x){toast(friendly(x))}
   }
 });
+
+function adminBulk(){
+  const cats=Object.keys(CATS);
+  const m=modal(`<h2>Add many businesses</h2>
+   <p class="muted small">One business per line. Separate with commas:<br><b>name, category, owner, mobile, city, area, commission</b></p>
+   <p class="small" style="background:var(--soft);padding:8px;border-radius:10px">Example:<br>Sharma Sweets, Grocery, Raj Sharma, 9876543210, Pune, Pimpri, 10%<br>City Mobiles, Mobile Phones, Amit, 9123456780, Pune, Akurdi, 300<br>Raj Tutors, Education, Raj, 9012345678, Pune, Nigdi, talk</p>
+   <p class="muted small">Commission: <b>10%</b> = percent, <b>300</b> = fixed ₹, <b>talk</b> = talk to owner. Wrong category becomes "Other Services".</p>
+   <textarea id="bt" rows="8" placeholder="Paste your lines here"></textarea>
+   <p class="err" id="be"></p><button class="btn g big" id="bg">Add all</button>`);
+  $("#bg",m).onclick=async()=>{
+    const er=$("#be",m),lines=$("#bt",m).value.split("\n").map(x=>x.trim()).filter(Boolean),out=[],bad=[];
+    lines.forEach((ln,i)=>{
+      const p=ln.split(",").map(x=>x.trim());
+      if(p.length<7){bad.push(i+1);return}
+      const [name,cat,owner,phone,city,area,com]=p,ph=phone.replace(/\D/g,"").slice(-10);
+      let ct="talk",cv=0;
+      if(/%$/.test(com)){ct="percent";cv=parseFloat(com)}else if(/^\d+(\.\d+)?$/.test(com)){ct="fixed";cv=parseFloat(com)}
+      if(!name||!owner||!city||!area||!/^[6-9]\d{9}$/.test(ph)||(ct!=="talk"&&!(cv>0))||(ct==="percent"&&cv>100)){bad.push(i+1);return}
+      const c=cats.find(k=>k.toLowerCase()===cat.toLowerCase())||"Other Services";
+      out.push({name:name.slice(0,70),cat:c,owner:owner.slice(0,60),phone:ph,city:city.slice(0,40),area:area.slice(0,50),ct,cv,note:"",desc:"",img:"",ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
+    });
+    if(!lines.length)return er.textContent="Please paste at least one line.";
+    if(bad.length)return er.textContent="Please check line number: "+bad.join(", ")+". Nothing was added.";
+    if(out.length>200)return er.textContent="Please add up to 200 at a time.";
+    const btn=$("#bg",m);btn.disabled=true;btn.textContent="Adding…";
+    try{
+      const b=fb.writeBatch(db);out.forEach(d=>b.set(fb.doc(col("businesses")),d));await b.commit();
+      bust();m.close();toast(out.length+" businesses added");route(true);
+    }catch(x){er.textContent=friendly(x);btn.disabled=false;btn.textContent="Add all"}
+  };
+}
 
 function adminAdd(){
   const m=modal(`<h2>Add a business</h2><p class="muted small">It goes live at once. The shop owner is not linked, so you manage it from Admin.</p>
