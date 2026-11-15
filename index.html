@@ -159,6 +159,33 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 .nw span{display:block;color:var(--muted);font-size:.8rem;margin-top:3px}
 .svc{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
 .svc:last-child{border:0}
+
+/* services, slider, news, ai */
+nav a{font-size:.72rem}nav a i{font-size:1.45rem}
+.slider{position:relative}
+.sl{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:16px;background:var(--soft)}
+.sl::-webkit-scrollbar{display:none}
+.sl img{flex:none;width:100%;height:230px;object-fit:cover;scroll-snap-align:center}
+.dots{display:flex;gap:6px;justify-content:center;margin-top:8px}
+.dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--blue);width:18px;border-radius:6px}
+.sv{padding:14px;margin-bottom:12px}
+.svh{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.svp{color:var(--ink);white-space:nowrap}
+.sv .btns{display:flex;gap:8px;margin-top:10px}.sv .btns .btn{flex:1;padding:10px 12px;font-size:.92rem}
+.art{display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line);color:var(--ink);align-items:center}
+.art img{width:84px;height:64px;object-fit:cover;border-radius:10px;flex:none}
+.art b{display:block;font-size:1rem;line-height:1.3}.art span{display:block;color:var(--muted);font-size:.85rem;margin-top:2px}
+.artbody{font-size:1.02rem;line-height:1.65;margin-top:8px}
+#fab{position:fixed;right:14px;bottom:calc(84px + env(safe-area-inset-bottom));width:52px;height:52px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.5rem;box-shadow:0 6px 18px rgba(0,0,0,.28);z-index:55}
+[data-theme=dark] #fab{color:#0d1621}
+.aichat{display:flex;flex-direction:column;gap:10px;padding:6px 0 90px}
+.bub{max-width:88%;padding:10px 14px;border-radius:16px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word}
+.bub.bot{background:var(--soft);align-self:flex-start;border-bottom-left-radius:4px}
+.bub.me{background:var(--blue);color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+[data-theme=dark] .bub.me{color:#0d1621}
+.aiimg{display:block;width:100%;max-width:300px;border-radius:12px}
+.aibar{position:fixed;left:0;right:0;bottom:calc(66px + env(safe-area-inset-bottom));display:flex;gap:8px;padding:8px 12px;background:var(--card);border-top:1px solid var(--line);z-index:56;max-width:900px;margin:0 auto}
+.aibar input{flex:1}
 </style><style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
 <body>
@@ -175,9 +202,8 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 <main class="wrap" id="app"><div class="spin"></div></main>
 <nav>
   <a href="#/" data-t="home"><i>🏠</i>Home</a>
-  <a href="#/list" data-t="list"><i>🔎</i>Businesses</a>
-  <a href="#/shop" data-t="shop"><i>🏪</i>My Business</a>
-  <a href="#/refs" data-t="refs"><i>📋</i>Referrals</a>
+  <a href="#/services" data-t="services"><i>🛠️</i>Services</a>
+  <a href="#/ai" data-t="ai"><i>✨</i>AI</a>
   <a href="#/me" data-t="me"><i>👤</i>Account</a>
 </nav>
 <div id="toast"><span></span></div>
@@ -211,17 +237,27 @@ const spin=()=>`<div class="spin"></div>`;
 const tagsOf=b=>String(b.tags||"").split(",").map(x=>x.trim()).filter(Boolean).slice(0,8);
 const svcOf=b=>String(b.svc||"").split("\n").map(x=>x.trim()).filter(Boolean).slice(0,12).map(l=>{const m=l.match(/^(.*\S)\s+[-–—]\s+(.+)$/);return m?[m[1],m[2]]:[l,""]});
 const imgsOf=b=>(b.imgs&&b.imgs.length)?b.imgs:[imgOf(b)];
-const ago=d=>{const t=new Date(String(d).replace(" ","T")+(/Z|\+/.test(d)?"":"Z")).getTime();if(!t)return"";const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
+const ago=d=>{const t=/GMT/.test(d)?Date.parse(d):new Date(String(d).replace(" ","T")+(/Z|\+/.test(d)?"":"Z")).getTime();if(!t)return"";const m=Math.max(1,Math.round((Date.now()-t)/6e4));return m<60?m+" min ago":m<1440?Math.round(m/60)+" h ago":Math.round(m/1440)+" d ago"};
 const NEWSF={biz:"https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=en-IN&gl=IN&ceid=IN:en",msme:"https://news.google.com/rss/search?q=MSME+OR+%22small+business%22+India+when:7d&hl=en-IN&gl=IN&ceid=IN:en"};
 async function getNews(k){
   const key="bcnews_"+k;
   try{const c=JSON.parse(sessionStorage.getItem(key)||"null");if(c&&Date.now()-c.t<18e5)return c.items}catch{}
-  const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(NEWSF[k]));const j=await r.json();
-  if(j.status!=="ok")throw new Error("news");
-  const items=j.items.slice(0,20).map(i=>{const m=i.title.match(/^(.*) - ([^-]+)$/);return{t:m?m[1]:i.title,s:m?m[2]:"",u:i.link,d:i.pubDate}});
+  const tit=x=>{const m=String(x.t).match(/^(.*) - ([^-]+)$/);return m?{...x,t:m[1],s:m[2]}:{...x,s:""}};
+  let items=null;
+  try{
+    const r=await fetch("https://api.rss2json.com/v1/api.json?rss_url="+encodeURIComponent(NEWSF[k]));const j=await r.json();
+    if(j.status==="ok")items=j.items.slice(0,20).map(i=>tit({t:i.title,u:i.link,d:i.pubDate}));
+  }catch{}
+  if(!items){
+    const r=await fetch("https://api.allorigins.win/raw?url="+encodeURIComponent(NEWSF[k]));const x=new DOMParser().parseFromString(await r.text(),"text/xml");
+    items=[...x.querySelectorAll("item")].slice(0,20).map(i=>tit({t:(i.querySelector("title")||{}).textContent||"",u:(i.querySelector("link")||{}).textContent||"",d:(i.querySelector("pubDate")||{}).textContent||""}));
+  }
+  if(!items.length)throw new Error("news");
   try{sessionStorage.setItem(key,JSON.stringify({t:Date.now(),items}))}catch{}
   return items;
 }
+async function getArticles(){try{return rows(await fb.getDocs(col("articles"))).sort(lastOrder)}catch{return[]}}
+const artHtml=l=>l.map(x=>`<a class="art" href="#/article/${esc(x.id)}">${x.img?`<img src="${esc(x.img)}" alt="">`:""}<div><b>${esc(x.title)}</b><span>${esc(String(x.body||"").slice(0,90))}${String(x.body||"").length>90?"…":""}</span></div></a>`).join("");
 const newsHtml=(l,n)=>l.slice(0,n).map(x=>`<a class="nw" href="${esc(x.u)}" target="_blank" rel="noopener"><b>${esc(x.t)}</b><span>${esc(x.s)}${x.s?" · ":""}${esc(ago(x.d))}</span></a>`).join("");
 const lastOrder=(a,b)=>(b.t||0)-(a.t||0);
 
@@ -316,18 +352,81 @@ pages.home=async()=>{
     <div><h2>Refer customers.<br>Earn commission.</h2><p class="small">Shops pay you directly. 100% free.</p></div>
     <div class="pb"><a class="btn g s" href="#/list">💸 Earn</a><a class="btn o s" href="#/shop">🏪 List my shop</a></div>
   </section>
+  <div class="head"><h2>Latest news</h2><a href="#/news"><b>See all →</b></a></div>
+  <div id="nh"><p class="muted small">Loading news…</p></div>
   <div class="head"><h2>Popular businesses</h2>${l.length?`<a href="#/list"><b>See all →</b></a>`:""}</div>
   ${top.length?`<div class="grid">${top.map(card).join("")}</div>`:emptyBiz}
-  <div class="head"><h2>Latest news</h2><a href="#/news"><b>See all →</b></a></div>
-  <div id="nh" class="nwl"><p class="muted small">Loading news…</p></div>
   <p class="center small"><a href="#/help"><b>How does it work?</b></a></p>
   <div class="note">💡 The shop pays your commission <b>directly to you</b>. This app never touches your money and cannot promise earnings.</div>`;
 };
 
 pages.news=async(q)=>{
   const k=q.get("t")==="msme"?"msme":"biz";
-  return `<h1>News</h1><div class="chips"><a class="${k==="biz"?"on":""}" href="#/news">Business</a><a class="${k==="msme"?"on":""}" href="#/news?t=msme">Small business</a></div><div id="nl" class="nwl"><p class="muted small">Loading news…</p></div>`;
+  return `<h1>News</h1><div class="chips"><a class="${k==="biz"?"on":""}" href="#/news">Business</a><a class="${k==="msme"?"on":""}" href="#/news?t=msme">Small business</a></div><div id="nl"><p class="muted small">Loading news…</p></div>`;
 };
+pages.article=async(q,id)=>{
+  const d=id?await fb.getDoc(dref("articles",id)):null;
+  if(!d||!d.exists())return `<div class="empty"><b>Article not found</b><a class="btn" href="#/news">Back</a></div>`;
+  const a=d.data();
+  return `<p style="margin:12px 0"><a href="#/news"><b>← Back</b></a></p>${a.img?`<img src="${esc(a.img)}" alt="" style="width:100%;border-radius:16px;max-height:260px;object-fit:cover">`:""}
+  <h1 style="margin-top:12px">${esc(a.title)}</h1><p class="muted small">${esc(new Date(a.t||0).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}))}</p>
+  <div class="artbody">${esc(a.body).replace(/\n/g,"<br>")}</div>
+  ${ADMIN?`<div class="row" style="margin-top:14px"><button class="btn o s" data-ad="editart|${esc(id)}">✏️ Edit</button><button class="btn r s" data-ad="delart|${esc(id)}">Delete</button></div>`:""}`;
+};
+pages.services=async(q)=>{
+  const l=await approved(),f={q:(q.get("q")||"").toLowerCase(),cat:q.get("cat")||""};
+  let all=[];l.forEach(b=>svcOf(b).forEach(([n,p])=>all.push({n,p,b})));
+  const cats=[...new Set(all.map(x=>x.b.cat))];
+  const hit=x=>(!f.cat||x.b.cat===f.cat)&&(!f.q||(x.n+" "+x.b.name+" "+x.b.cat+" "+(x.b.tags||"")).toLowerCase().includes(f.q));
+  const res=all.filter(hit);
+  const link=c=>"#/services"+(c?"?cat="+encodeURIComponent(c):"");
+  return `<h1>Services</h1><p class="muted small" style="margin-top:0">Book a service from local businesses.</p>
+  <form id="sf" class="hsearch" style="margin-top:8px"><span>🔍</span><input name="q" type="search" value="${esc(q.get("q")||"")}" placeholder="Search a service"><button class="btn g s">Search</button></form>
+  ${cats.length?`<div class="chips"><a class="${f.cat?"":"on"}" href="${link("")}">All</a>${cats.map(c=>`<a class="${f.cat===c?"on":""}" href="${link(c)}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>`:""}
+  ${res.length?res.map(x=>`<div class="card sv"><div class="svh"><div><h3>${esc(x.n)}</h3><p class="muted small" style="margin:2px 0">${esc(x.b.name)} · ${esc(x.b.area)}, ${esc(x.b.city)}</p></div>${x.p?`<b class="svp">${esc(x.p)}</b>`:""}</div>
+   <div class="btns"><a class="btn g" target="_blank" rel="noopener" href="${wa(x.b.phone,"Hi, I want to book: "+x.n+". Found on BusinessConnect.")}">Book on WhatsApp</a><a class="btn o" href="#/biz/${esc(x.b.id)}">View shop</a></div></div>`).join(""):`<div class="empty"><b>🛠️ No services yet</b>Shop owners can add services in <b>My Shop → Edit</b>.<br><br><a class="btn g" href="#/shop">Add my services</a></div>`}`;
+};
+pages.ai=async()=>`<h1>✨ AI Assistant</h1>
+  <p class="muted small" style="margin-top:0">Ask anything. Talk or type. It can also make pictures. Free and in beta, so it can be slow and may make mistakes.</p>
+  <div class="row" style="margin-bottom:8px"><div class="seg" style="flex:1"><a href="#" class="on" data-m="chat">💬 Chat</a><a href="#" data-m="img">🎨 Picture</a></div>
+  <select id="alang" style="width:auto;padding:9px"><option value="en-IN">English</option><option value="hi-IN">हिन्दी</option></select>
+  <button class="ib" id="aspk" title="Read answers aloud">🔇</button></div>
+  <div id="aichat" class="aichat"><div class="bub bot">Hello! 👋 Ask me about shops, referrals, or anything else. Tap 🎤 to talk.</div></div>
+  <form id="aif" class="aibar"><button type="button" class="ib" id="amic" aria-label="Speak">🎤</button><input id="ain" placeholder="Type your question…" autocomplete="off"><button class="btn g s" id="asend">Send</button></form>`;
+let AIH=[],AIMODE="chat",AISPK=false;
+function bindAI(){
+  const box=$("#aichat"),inp=$("#ain"),mic=$("#amic"),lang=$("#alang");let busy=false;
+  const add=(c,t)=>{const d=document.createElement("div");d.className="bub "+c;d.textContent=t;box.appendChild(d);d.scrollIntoView({block:"end"});return d};
+  AIH.forEach(m=>add(m.r==="u"?"me":"bot",m.t));
+  $$("[data-m]").forEach(a=>a.onclick=e=>{e.preventDefault();AIMODE=a.dataset.m;$$("[data-m]").forEach(x=>x.classList.toggle("on",x===a));inp.placeholder=AIMODE==="img"?"Describe the picture you want…":"Type your question…"});
+  const sp=$("#aspk");sp.onclick=()=>{AISPK=!AISPK;sp.textContent=AISPK?"🔊":"🔇";if(!AISPK&&window.speechSynthesis)speechSynthesis.cancel()};sp.textContent=AISPK?"🔊":"🔇";
+  const speak=t=>{if(!AISPK||!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=lang.value;speechSynthesis.speak(u)};
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR)mic.hidden=true;
+  else mic.onclick=()=>{try{const r=new SR();r.lang=lang.value;r.interimResults=false;mic.textContent="🔴";r.onresult=e=>{inp.value=e.results[0][0].transcript;$("#aif").requestSubmit()};r.onend=()=>{mic.textContent="🎤"};r.onerror=()=>{mic.textContent="🎤";toast("Could not hear. Please allow the microphone.")};r.start()}catch{toast("Voice is not available on this phone")}};
+  $("#aif").onsubmit=async e=>{
+    e.preventDefault();const t=inp.value.trim();if(!t||busy)return;inp.value="";busy=true;$("#asend").disabled=true;
+    add("me",t);AIH.push({r:"u",t});
+    const w=add("bot","Thinking…");
+    try{
+      if(AIMODE==="img"){
+        const url="https://image.pollinations.ai/prompt/"+encodeURIComponent(t)+"?width=768&height=768&nologo=true&safe=true&seed="+Math.floor(Math.random()*1e6);
+        w.textContent="Making your picture… this can take up to a minute.";
+        await new Promise((ok,no)=>{const im=new Image();im.onload=()=>{w.textContent="";im.className="aiimg";w.appendChild(im);w.scrollIntoView({block:"end"});ok()};im.onerror=()=>no(new Error("img"));im.src=url});
+        AIH.push({r:"b",t:"(picture)"});
+      }else{
+        const hist=AIH.slice(-7,-1).map(m=>(m.r==="u"?"User: ":"Assistant: ")+m.t).join("\n");
+        const prompt=(hist?hist+"\n":"")+"User: "+t;
+        const sys="You are the friendly assistant of BusinessConnect, an app where people refer customers to local shops and earn commission paid directly by the shop. Answer briefly and simply, in the same language the user writes (English, Hindi or Hinglish). Never ask for passwords, OTPs or money. Do not promise earnings.";
+        const r=await fetch("https://text.pollinations.ai/"+encodeURIComponent(prompt.slice(-1400))+"?model=openai&system="+encodeURIComponent(sys));
+        const a=(await r.text()).trim();
+        if(!r.ok||!a)throw new Error(r.status===402?"busy":"fail");
+        w.textContent=a;AIH.push({r:"b",t:a});speak(a);
+      }
+    }catch(x){w.textContent=(x&&x.message==="busy")?"The free AI is busy. Please wait 30 seconds and try again.":"Sorry, the AI did not answer. Please check your internet and try again."}
+    busy=false;$("#asend").disabled=false;w.scrollIntoView({block:"end"});
+  };
+}
 pages.list=async(q)=>{
   const f={q:q.get("q")||"",cat:q.get("cat")||"",city:q.get("city")||""};
   const l=await approved(),cities=[...new Set(l.map(b=>b.city))].sort(),cats=[...new Set(l.map(b=>b.cat))];
@@ -349,7 +448,7 @@ pages.biz=async(q,id)=>{
   const sv=SAVED.has(b.id);
   return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
   ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
-  <div class="gal">${imgsOf(b).map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>
+  <div class="slider"><div class="sl">${imgsOf(b).map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgsOf(b).length>1?`<div class="dots">${imgsOf(b).map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
   <h1 style="margin-top:12px">${esc(b.name)}</h1>
   <p class="muted">${CATS[b.cat]||"🏪"} ${esc(b.cat)} · 📍 ${esc(b.area)}, ${esc(b.city)}</p>
   <div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>
@@ -404,6 +503,9 @@ pages.me=async()=>{
   <div class="card pad row between"><div><h3>${esc(P.name)}</h3><p class="muted small" style="margin:0">+91 ${esc(P.phone)}${P.city?" · "+esc(P.city):""}</p>${P.email?`<p class="muted small" style="margin:0">${esc(P.email)}</p>`:""}</div><button class="btn o s" id="rename">Edit</button></div>
   <div class="stat" style="margin:12px 0"><div><b>${mine.length}</b><span>I referred</span></div><div><b>${mine.filter(r=>r.status==="paid").length}</b><span>Paid to me</span></div><div><b>${inc.length}</b><span>To my shop</span></div></div>
   <div class="card list">
+    <a href="#/shop"><span class="ic">🏪</span>My Business<span class="go">›</span></a>
+    <a href="#/refs"><span class="ic">📋</span>My Referrals<span class="go">›</span></a>
+    <a href="#/list"><span class="ic">🔎</span>All businesses<span class="go">›</span></a>
     <a href="#/saved"><span class="ic">♥</span>Saved businesses<span class="go">›</span></a>
     <a href="#/help"><span class="ic">❓</span>How it works<span class="go">›</span></a>
     ${ADMIN?`<a href="#/admin"><span class="ic">🛡️</span>Admin<span class="go">›</span></a>`:""}
@@ -461,7 +563,8 @@ pages.admin=async()=>{
   return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
   <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
   <button class="btn g big" data-ad="add|x" style="margin:10px 0 6px">➕ Add a business myself</button>
-  <button class="btn o big" data-ad="bulk|x" style="margin:0 0 10px">📥 Add many at once</button>
+  <button class="btn o big" data-ad="bulk|x" style="margin:0 0 6px">📥 Add many at once</button>
+  <button class="btn o big" data-ad="art|x" style="margin:0 0 10px">✍️ Write an article</button>
   <div class="head"><h2>⏳ Waiting for approval</h2></div>${pend.length?pend.map(row).join(""):`<p class="muted">Nothing waiting.</p>`}
   <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div>`).join(""):`<p class="muted">No reports.</p>`}
   <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}`;
@@ -518,8 +621,9 @@ async function route(keep){
   const my=++tok;
   const parts=location.hash.replace(/^#\/?/,"").split("?"),segs=parts[0].split("/").filter(Boolean);
   const name=segs[0]||"home",id=segs[1],q=new URLSearchParams(parts[1]||"");
-  const t=({home:"home",list:"list",biz:"list",refs:"refs",shop:"shop",edit:"shop"})[name]||(["me","saved","help","admin","login"].includes(name)?"me":"home");
+  const t=({home:"home",list:"home",biz:"home",services:"services",refs:"me",shop:"me",edit:"me",news:"home",article:"home",ai:"ai"})[name]||(["me","saved","help","admin","login"].includes(name)?"me":"home");
   $$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.t===t));
+
   $("#lg").hidden=!!U;
   const show=h=>{if(my!==tok)return false;app.innerHTML=h;if(!keep)window.scrollTo(0,0);return true};
   if(name==="login"){
@@ -538,13 +642,30 @@ window.addEventListener("hashchange",()=>route());
 async function loadNews(){
   const nh=$("#nh"),nl=$("#nl");
   if(!nh&&!nl)return;
-  const k=nl&&/t=msme/.test(location.hash)?"msme":"biz";
-  try{const l=await getNews(k);const h=newsHtml(l,nl?20:4);const box=$("#nh")||$("#nl");if(box)box.innerHTML=h||`<p class="muted small">No news now.</p>`}
-  catch{const box=$("#nh")||$("#nl");if(box)box.innerHTML=`<p class="muted small">News could not load. Please try again later.</p>`}
+  const box=nh||nl,k=nl&&/t=msme/.test(location.hash)?"msme":"biz";
+  const arts=await getArticles();let h=artHtml(arts.slice(0,nl?30:2)),err=false;
+  if(!(nl&&k==="msme"&&false)){
+    try{const l=await getNews(k);h+=`<div class="nwl">${newsHtml(l,nl?20:nh?3:0)}</div>`}catch{err=true}
+  }
+  if(!document.body.contains(box))return;
+  box.innerHTML=h||`<p class="muted small">News could not load right now. <a href="#" id="nretry"><b>Try again</b></a></p>`;
+  if(err&&h)box.insertAdjacentHTML("beforeend",`<p class="muted small">Live news could not load. <a href="#" id="nretry"><b>Try again</b></a></p>`);
+  const rt=$("#nretry");if(rt)rt.onclick=e=>{e.preventDefault();try{sessionStorage.clear()}catch{};box.innerHTML=`<p class="muted small">Loading news…</p>`;loadNews()};
 }
+let SLT=null;
 function bind(name){
   loadNews();
+  clearInterval(SLT);
+  const sl=$(".sl");
+  if(sl&&sl.children.length>1){
+    const n=sl.children.length,dots=$$(".dots i");let i=0;
+    const mark=k=>dots.forEach((d,x)=>d.classList.toggle("on",x===k));
+    sl.onscroll=()=>{i=Math.round(sl.scrollLeft/sl.clientWidth);mark(i)};
+    SLT=setInterval(()=>{if(!document.body.contains(sl)){clearInterval(SLT);return}i=(i+1)%n;sl.scrollTo({left:i*sl.clientWidth,behavior:"smooth"})},3000);
+  }
+  const ai=$("#aichat");if(ai)bindAI();
   const hs=$("#hs");if(hs)hs.onsubmit=e=>{e.preventDefault();const v=$("#hq").value.trim();location.hash="#/list"+(v?"?q="+encodeURIComponent(v):"")};
+  const sf=$("#sf");if(sf)sf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(sf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/services?"+p};
   const lf=$("#lf");if(lf)lf.onsubmit=e=>{e.preventDefault();const p=new URLSearchParams(location.hash.split("?")[1]||"");const v=new FormData(lf).get("q").trim();v?p.set("q",v):p.delete("q");location.hash="#/list?"+p};
   const cf=$("#cityf");if(cf)cf.onchange=()=>{const p=new URLSearchParams(location.hash.split("?")[1]||"");cf.value?p.set("city",cf.value):p.delete("city");location.hash="#/list?"+p};
   const ef=$("#ef");if(ef)bindEdit(ef);
@@ -615,6 +736,9 @@ document.addEventListener("click",async e=>{
   if(ad){const [a,id]=ad.dataset.ad.split("|");
     if(a==="add")return adminAdd();
     if(a==="bulk")return adminBulk();
+    if(a==="art")return adminArticle();
+    if(a==="editart"){const d=await fb.getDoc(dref("articles",id));return d.exists()&&adminArticle({id,...d.data()})}
+    if(a==="delart"){if(!confirm("Delete this article?"))return;try{await fb.deleteDoc(dref("articles",id));toast("Deleted");location.hash="#/news"}catch(x){toast(friendly(x))}return}
     if(a==="edit"){const eb=await getBiz(id);return eb&&adminAdd(eb)}
     try{
       if(a==="rep")await fb.deleteDoc(dref("reports",id));
@@ -626,6 +750,25 @@ document.addEventListener("click",async e=>{
   }
 });
 
+function adminArticle(ex){
+  const X=ex||{};
+  const m=modal(`<h2>${ex?"Edit article":"Write an article"}</h2>
+   <label>Title</label><input id="wt" maxlength="120" value="${esc(X.title||"")}">
+   <label>Text</label><textarea id="wb" rows="10" maxlength="6000" placeholder="Write here. Press Enter for a new line.">${esc(X.body||"")}</textarea>
+   <label>Photo <small>(optional)</small></label><input id="wi" type="file" accept="image/*">
+   <p class="err" id="we"></p><button class="btn g big" id="wg">${ex?"Save changes":"Publish"}</button>`);
+  $("#wg",m).onclick=async()=>{
+    const t=$("#wt",m).value.trim(),b=$("#wb",m).value.trim(),er=$("#we",m);
+    if(t.length<3)return er.textContent="Please write a title.";
+    if(b.length<10)return er.textContent="Please write some text.";
+    const btn=$("#wg",m);btn.disabled=true;
+    try{
+      const d={title:t,body:b};const f=$("#wi",m).files[0];if(f)d.img=await shrink(f);
+      if(ex)await fb.updateDoc(dref("articles",ex.id),{...d,upd:Date.now()});else await fb.addDoc(col("articles"),{img:"",...d,by:U.uid,t:Date.now()});
+      m.close();toast(ex?"Saved":"Published");route(true);
+    }catch(x){er.textContent=friendly(x);btn.disabled=false}
+  };
+}
 function adminBulk(){
   const cats=Object.keys(CATS);
   const m=modal(`<h2>Add many businesses</h2>
