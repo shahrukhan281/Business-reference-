@@ -8,6 +8,7 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.3.0/firebase-app.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.3.0/firebase-auth.js"><link rel="modulepreload" href="https://www.gstatic.com/firebasejs/13.3.0/firebase-firestore.js">
 <title>BusinessConnect – Refer customers. Earn commission.</title>
 <style>
 :root{--blue:#1565c0;--blue-d:#0d47a1;--blue-l:#e3f0ff;--green:#1b9e5a;--green-d:#13794a;--green-l:#e4f7ec;--ink:#16222e;--muted:#5f6f7f;--line:#e3e9ef;--bg:#f4f7fb;--card:#fff;--soft:#eef3f8;--warn:#9a5b00;--warn-l:#fff4e0;--red:#c62828;--shadow:0 4px 16px rgba(20,60,100,.08);color-scheme:light}
@@ -255,6 +256,24 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
 .pact .lk.on{color:#e53935}.pact b{font-size:.9rem}
 .pt{margin:0;padding:0 12px 12px;white-space:pre-wrap}
 .post>a.small{display:block;padding:0 12px 12px}
+.composer{display:flex;gap:10px;align-items:center;padding:10px 12px}
+.composer .cin{flex:1;text-align:left;background:var(--soft);border:1px solid var(--line);border-radius:22px;padding:10px 14px;color:var(--muted);font-size:.9rem;cursor:pointer}
+.acc{display:flex;align-items:center;gap:12px;padding:12px;margin-bottom:10px;border:1.5px solid var(--line)}
+.aic{width:52px;height:52px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex:none}
+.aic.cash{background:#e4f7ec}.aic.bank{background:#e3f0ff}.aic.card{background:#fdeaea}.aic.wallet{background:#fff4e0}
+.ab{flex:1;min-width:0}.ab b{font-size:1.05rem;display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ab p{margin:2px 0 0;color:var(--muted)}
+.pos{color:#1b7a43;font-weight:800}.neg{color:#c62828;font-weight:800}
+.dots{background:none;border:0;font-size:1.6rem;font-weight:800;color:var(--ink);padding:4px 8px;cursor:pointer}
+.addacc{margin:6px 0 12px}
+.msum{text-align:center;margin:6px 0 4px}
+.mall{font-size:1.25rem;font-weight:700;color:var(--blue-d);word-break:break-word}.mall b{font-weight:800}
+.mrow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+.mrow small{display:block;font-size:.72rem;letter-spacing:.04em;color:var(--muted);font-weight:700}
+.mrow b{display:block;font-size:1.15rem;margin-top:2px;word-break:break-word}
+.neg{color:#c62828}.pos{color:#1b7a45}
+.acc .ab{min-width:0;flex:1;word-break:break-word}.acc .ab b{font-size:1.05rem}.acc .ab p{margin:4px 0 0}
+.tx>div:first-child{min-width:0;word-break:break-word}.tr b{font-size:.95rem}
+.fab2{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:2rem;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:57;cursor:pointer}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
@@ -272,7 +291,7 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
 <main class="wrap" id="app"><div class="spin"></div></main>
 <nav>
   <a href="#/" data-t="home"><i>🏠</i>Home</a>
-  <a href="#/services" data-t="services"><i>🛠️</i>Services</a>
+  <a href="#/feed" data-t="feed"><i>📸</i>Feed</a>
   <a href="#/money" data-t="money"><i>💰</i>Expenses</a>
   <a href="#/bill" data-t="bill"><i>🧾</i>Invoice</a>
   <a href="#/me" data-t="me"><i>👤</i>Account</a>
@@ -343,15 +362,15 @@ const col=n=>fb.collection(db,n), dref=(...p)=>fb.doc(db,...p);
 const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
 
 async function loadExtras(){
-  try{ADMIN=(await fb.getDoc(dref("admins",U.uid))).exists()}catch{ADMIN=false}
-  try{SAVED=new Set((await fb.getDocs(col("users/"+U.uid+"/saved"))).docs.map(d=>d.id))}catch{SAVED=new Set()}
+  await Promise.all([
+    fb.getDoc(dref("admins",U.uid)).then(d=>{ADMIN=d.exists()}).catch(()=>{ADMIN=false}),
+    fb.getDocs(col("users/"+U.uid+"/saved")).then(s=>{SAVED=new Set(s.docs.map(d=>d.id))}).catch(()=>{SAVED=new Set()})]);
 }
 let cache={at:0,list:[]};
 const bust=()=>{cache.at=0};
 async function approved(){
-  await ratings();
-  if(Date.now()-cache.at<30000)return cache.list;
-  const s=await fb.getDocs(fb.query(col("businesses"),fb.where("status","==","approved")));
+  if(Date.now()-cache.at<30000){await ratings();return cache.list}
+  const [s]=await Promise.all([fb.getDocs(fb.query(col("businesses"),fb.where("status","==","approved"))),ratings()]);
   cache={at:Date.now(),list:rows(s)};return cache.list;
 }
 async function getBiz(id){const s=await fb.getDoc(dref("businesses",id));return s.exists()?{id:s.id,...s.data()}:null}
@@ -988,6 +1007,7 @@ async function loadMoney(){
 }
 const mName=m=>new Date(m+"-01T00:00:00").toLocaleDateString("en-IN",{month:"long",year:"numeric"});
 const mShift=(m,n)=>{const d=new Date(m+"-01T00:00:00");d.setMonth(d.getMonth()+n);return ymd(d).slice(0,7)};
+const money2=n=>(n<0?"-":"")+"₹"+Math.abs(Number(n||0)).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
 const accBal=a=>Number(a.open||0)+MONEY.tx.filter(x=>x.acc===a.id).reduce((s,x)=>s+(x.type==="inc"?1:-1)*Number(x.amt||0),0);
 pages.money=async(q)=>{
   await loadMoney();
@@ -998,26 +1018,29 @@ pages.money=async(q)=>{
   const cl=Object.entries(byC).sort((a,b)=>b[1]-a[1]),mx=cl.length?cl[0][1]:1;
   const accName=id=>(MONEY.acc.find(a=>a.id===id)||{name:"(deleted account)"}).name;
   const total=MONEY.acc.reduce((s,a)=>s+accBal(a),0);
-  return `<h1>💰 Expenses</h1>
-  <div class="monthbar"><a href="#/money?m=${mShift(mo,-1)}">‹</a><b>${esc(mName(mo))}</b><a href="#/money?m=${mShift(mo,1)}">›</a></div>
-  <div class="stat" style="margin:10px 0"><div><b>${money(inc)}</b><span>Income</span></div><div><b>${money(exp)}</b><span>Spent</span></div><div><b>${money(inc-exp)}</b><span>Saved</span></div></div>
-  <div class="row" style="margin:10px 0"><button class="btn g" data-x="addtx|x">➕ Add</button><button class="btn o s" data-x="accs|x">🏦 Accounts</button><button class="btn o s" data-x="cats|x">🏷️ Categories</button><button class="btn o s" data-x="csv|${esc(mo)}">⬇ CSV</button></div>
-  <div class="card pad"><div class="row between"><h3>My accounts</h3><b>${money(total)}</b></div>
-   ${MONEY.acc.length?MONEY.acc.map(a=>`<div class="svc"><span>${esc(ACC_TYPES[a.type]||"")} ${esc(a.name)}</span><b>${money(accBal(a))}</b></div>`).join(""):`<p class="muted small">Add your first account (cash, bank or wallet).</p>`}</div>
+  return `<div class="monthbar"><a href="#/money?m=${mShift(mo,-1)}">‹</a><b>${esc(mName(mo))}</b><a href="#/money?m=${mShift(mo,1)}">›</a></div>
+  <div class="msum"><div class="mall">[ All Accounts <b class="${total<0?"neg":"pos"}">${money2(total)}</b> ]</div>
+   <div class="mrow"><div><small>EXPENSE SO FAR</small><b class="neg">${money2(exp)}</b></div><div><small>INCOME SO FAR</small><b class="pos">${money2(inc)}</b></div></div></div>
+  <div class="head"><h2>Accounts</h2></div>
+  ${MONEY.acc.map(a=>{const bl=accBal(a);return `<div class="card acc"><span class="aic ${esc(a.type)}">${(ACC_TYPES[a.type]||"💵").split(" ")[0]}</span><div class="ab"><b>${esc(a.name)}</b><p>Balance: <span class="${bl<0?"neg":"pos"}">${money2(bl)}</span></p></div><button class="dots" data-x="accmenu|${esc(a.id)}" aria-label="Edit or delete">⋯</button></div>`}).join("")}
+  ${MONEY.acc.length?"":`<p class="muted small">Add your first account (cash, bank, wallet or card).</p>`}
+  <button class="btn o big addacc" data-x="accadd|x">⊕ ADD NEW ACCOUNT</button>
+  <div class="row" style="margin:12px 0"><button class="btn o s" data-x="cats|x">🏷️ Categories</button><button class="btn o s" data-x="csv|${esc(mo)}">⬇ CSV</button></div>
   ${cl.length?`<div class="card pad" style="margin-top:12px"><h3>Spent by category</h3>${cl.map(([c,v])=>`<div class="cbar"><div class="row between small"><span>${esc(c)}</span><b>${money(v)}</b></div><div class="bt"><i style="width:${Math.max(3,Math.round(v/mx*100))}%"></i></div></div>`).join("")}</div>`:""}
   <div class="head"><h2>Entries</h2></div>
-  ${tx.length?tx.map(x=>`<div class="card tx"><div><b>${esc(x.cat||"Other")}</b><p class="muted small" style="margin:0">${esc(x.date)} · ${esc(accName(x.acc))}${x.note?" · "+esc(x.note):""}</p></div><div class="tr"><b>${x.type==="inc"?"+":"−"} ${money(x.amt)}</b><a href="#" data-x="deltx|${esc(x.id)}" class="small">Delete</a></div></div>`).join(""):`<div class="empty"><b>No entries this month</b>Tap <b>Add</b> to write your first expense or income.</div>`}
-  <p class="muted small center">Only you can see this page. All amounts are in Indian rupees (₹).</p>`;
+  ${tx.length?tx.map(x=>`<div class="card tx" data-x="edittx|${esc(x.id)}" style="cursor:pointer"><div><b>${esc(x.cat||"Other")}</b><p class="muted small" style="margin:0">${esc(x.date)} · ${esc(accName(x.acc))}${x.note?" · "+esc(x.note):""}</p></div><div class="tr"><b>${x.type==="inc"?"+":"−"} ${money(x.amt)}</b><a href="#" data-x="deltx|${esc(x.id)}" class="small">Delete</a></div></div>`).join(""):`<div class="empty"><b>No entries this month</b>Tap <b>Add</b> to write your first expense or income.</div>`}
+  <p class="muted small center">Only you can see this page. All amounts are in Indian rupees (₹).</p>
+  <button class="fab2" data-x="addtx|x" aria-label="Add entry">+</button>`;
 };
-function txModal(){
+function txModal(ex){
   if(!MONEY.acc.length){toast("Please add an account first.");return accModal()}
-  let type="exp";
-  const m=modal(`<h2>Add entry</h2><div class="seg" id="tt"><a href="#" class="on" data-t="exp">Expense</a><a href="#" data-t="inc">Income</a></div>
-    <label>Amount (₹)</label><input id="ta" type="number" inputmode="decimal" min="0" step="any" placeholder="0">
-    <label>Account</label><select id="tc">${MONEY.acc.map(a=>`<option value="${esc(a.id)}">${esc(a.name)}</option>`).join("")}</select>
-    <label>Category</label><select id="tg">${MONEY.cats.map(c=>`<option>${esc(c)}</option>`).join("")}</select>
-    <label>Date</label><input id="td" type="date" value="${ymd(new Date())}">
-    <label>Note <small>(optional)</small></label><input id="tn" maxlength="80">
+  let type=ex?ex.type:"exp";
+  const m=modal(`<h2>${ex?"Edit entry":"Add entry"}</h2><div class="seg" id="tt"><a href="#" class="${type==="exp"?"on":""}" data-t="exp">Expense</a><a href="#" class="${type==="inc"?"on":""}" data-t="inc">Income</a></div>
+    <label>Amount (₹)</label><input id="ta" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="${ex?esc(ex.amt):""}">
+    <label>Account</label><select id="tc">${MONEY.acc.map(a=>`<option value="${esc(a.id)}" ${ex&&ex.acc===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}</select>
+    <label>Category</label><select id="tg">${[...new Set([...(ex&&ex.cat?[ex.cat]:[]),...MONEY.cats])].map(c=>`<option ${ex&&ex.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <label>Date</label><input id="td" type="date" value="${ex?esc(ex.date):ymd(new Date())}">
+    <label>Note <small>(optional)</small></label><input id="tn" maxlength="80" value="${ex?esc(ex.note||""):""}">
     <p class="err" id="te"></p><button class="btn g big" id="ts">Save</button>`);
   $$("#tt a",m).forEach(a=>a.onclick=e=>{e.preventDefault();type=a.dataset.t;$$("#tt a",m).forEach(x=>x.classList.toggle("on",x===a))});
   $("#ts",m).onclick=async()=>{
@@ -1025,22 +1048,41 @@ function txModal(){
     if(!(amt>0))return er.textContent="Please write the amount.";
     if(!$("#td",m).value)return er.textContent="Please choose the date.";
     $("#ts",m).disabled=true;
-    try{await fb.addDoc(col("users/"+U.uid+"/tx"),{type,amt,acc:$("#tc",m).value,cat:$("#tg",m).value,date:$("#td",m).value,note:$("#tn",m).value.trim(),t:Date.now()});m.close();toast("Saved");route(true)}
+    try{const d={type,amt,acc:$("#tc",m).value,cat:$("#tg",m).value,date:$("#td",m).value,note:$("#tn",m).value.trim()};if(ex)await fb.updateDoc(dref("users",U.uid,"tx",ex.id),d);else await fb.addDoc(col("users/"+U.uid+"/tx"),{...d,t:Date.now()});m.close();toast("Saved");route(true)}
     catch(x){er.textContent=friendly(x);$("#ts",m).disabled=false}
   };
 }
 function accModal(){
-  const m=modal(`<h2>My accounts</h2><div id="al">${MONEY.acc.map(a=>`<div class="svc"><span>${esc(ACC_TYPES[a.type]||"")} ${esc(a.name)}</span><a href="#" data-d="${esc(a.id)}">Delete</a></div>`).join("")||`<p class="muted small">No accounts yet.</p>`}</div>
-    <h3 style="margin-top:14px">Add an account</h3>
+  const m=modal(`<h2>Add an account</h2>
     <label>Name</label><input id="an" maxlength="30" placeholder="Example: SBI Savings">
     <label>Type</label><select id="at">${Object.entries(ACC_TYPES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
     <label>Money in it now (₹)</label><input id="ao" type="number" inputmode="decimal" step="any" placeholder="0">
     <p class="err" id="ae"></p><button class="btn g big" id="as">Add account</button>`);
-  $$("[data-d]",m).forEach(a=>a.onclick=async e=>{e.preventDefault();if(!confirm("Delete this account? Its entries stay but show as deleted."))return;try{await fb.deleteDoc(dref("users",U.uid,"acc",a.dataset.d));m.close();route(true)}catch(x){toast(friendly(x))}});
   $("#as",m).onclick=async()=>{
     const n=$("#an",m).value.trim();if(!n)return $("#ae",m).textContent="Please write a name.";
     try{await fb.addDoc(col("users/"+U.uid+"/acc"),{name:n,type:$("#at",m).value,open:+$("#ao",m).value||0,t:Date.now()});m.close();toast("Account added");route(true)}
     catch(x){$("#ae",m).textContent=friendly(x)}
+  };
+}
+function accMenu(id){
+  const a=MONEY.acc.find(x=>x.id===id);if(!a)return;
+  const m=modal(`<h2>${esc(a.name)}</h2><div class="row" style="flex-direction:column;align-items:stretch;gap:8px"><button class="btn g" id="aed">✏️ Edit account</button><button class="btn r" id="adl">🗑 Delete account</button></div>`);
+  $("#adl",m).onclick=async()=>{if(!confirm("Delete this account? Its entries stay but show as deleted."))return;try{await fb.deleteDoc(dref("users",U.uid,"acc",id));m.close();route(true)}catch(x){toast(friendly(x))}};
+  $("#aed",m).onclick=()=>{m.close();accEdit(a)};
+}
+function accEdit(a){
+  const flow=accBal(a)-Number(a.open||0);
+  const m=modal(`<h2>Edit account</h2>
+    <label>Name</label><input id="en" maxlength="30" value="${esc(a.name)}">
+    <label>Type</label><select id="et">${Object.entries(ACC_TYPES).map(([k,v])=>`<option value="${k}" ${a.type===k?"selected":""}>${v}</option>`).join("")}</select>
+    <label>Balance now (₹)</label><input id="eb" type="number" inputmode="decimal" step="any" value="${accBal(a)}">
+    <p class="muted small" style="margin:4px 0 0">Change this if the balance is wrong. Your entries stay as they are.</p>
+    <p class="err" id="ee2"></p><button class="btn g big" id="es">Save</button>`);
+  $("#es",m).onclick=async()=>{
+    const n=$("#en",m).value.trim();if(!n)return $("#ee2",m).textContent="Please write a name.";
+    const nb=+$("#eb",m).value;if(isNaN(nb))return $("#ee2",m).textContent="Please write the balance.";
+    try{await fb.updateDoc(dref("users",U.uid,"acc",a.id),{name:n,type:$("#et",m).value,open:Math.round((nb-flow)*100)/100});m.close();toast("Saved");route(true)}
+    catch(x){$("#ee2",m).textContent=friendly(x)}
   };
 }
 function catModal(){
@@ -1050,7 +1092,7 @@ function catModal(){
   $("#ca",m).onclick=()=>{const v=$("#cn",m).value.trim();if(v&&!cats.includes(v)){cats.push(v);$("#cn",m).value="";draw()}};
   $("#cs",m).onclick=async()=>{if(!cats.length)return toast("Keep at least one category.");try{await fb.setDoc(dref("users",U.uid,"fin","cfg"),{cats},{merge:true});m.close();toast("Saved");route(true)}catch(x){toast(friendly(x))}};
 }
-XH.addtx=()=>txModal();XH.accs=()=>accModal();XH.cats=()=>catModal();
+XH.addtx=()=>txModal();XH.edittx=id=>{const x=MONEY.tx.find(y=>y.id===id);if(x)txModal(x)};XH.accs=()=>accModal();XH.accadd=()=>accModal();XH.accmenu=id=>accMenu(id);XH.cats=()=>catModal();
 XH.deltx=async id=>{if(!confirm("Delete this entry?"))return;try{await fb.deleteDoc(dref("users",U.uid,"tx",id));route(true)}catch(x){toast(friendly(x))}};
 XH.csv=mo=>{
   const q=s=>'"'+String(s||"").replace(/"/g,'""')+'"',an=id=>(MONEY.acc.find(a=>a.id===id)||{name:""}).name;
@@ -1223,7 +1265,7 @@ BIND.qr=()=>{const go=$("#qgo");if(go)go.onclick=()=>{const u=normUrl($("#qin").
 
 
 pages.home=async()=>{
-  const l=await approved(),arts=await getArticles(3);
+  const [l,arts]=await Promise.all([approved(),getArticles(3)]);
   const top=[...l].sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b)).slice(0,4);
   const names=Object.keys(CATS);
   const tile=(c,i)=>`<a class="ct${i>=11?" more":""}" href="#/list?cat=${encodeURIComponent(c)}"><span class="ci" style="--h:${(i*47)%360}">${CATS[c]}</span><span class="cn">${esc(catName(c))}</span></a>`;
@@ -1399,17 +1441,18 @@ function bindSetup(){
 const app=$("#app");
 const GATED=new Set(["shop","edit","refs","me","saved","admin","money","bill","chat","chats"]);
 let tok=0;
-const PUB=new Set(["home","list","services","jobs","articles","qa"]);
+const PUB=new Set(["home","list","jobs","articles","qa"]);
 async function route(keep){
   if(!READY){if(!app.innerHTML.trim())app.innerHTML=spin();return}
   const my=++tok;stopChat();document.querySelectorAll(".mw").forEach(x=>x.remove());
   const parts=location.hash.replace(/^#\/?/,"").split("?"),segs=parts[0].split("/").filter(Boolean);
   const name=segs[0]||"home",id=segs[1],q=new URLSearchParams(parts[1]||"");
-  const t=({home:"home",list:"home",biz:"home",jobs:"home",articles:"home",article:"home",services:"services",feed:"services",post:"services",qa:"services",q:"services",money:"money",bill:"bill"})[name]||"me";
+  const t=({home:"home",list:"home",biz:"home",jobs:"home",articles:"home",article:"home",feed:"feed",post:"feed",qa:"feed",q:"feed",money:"money",bill:"bill"})[name]||"me";
   $$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.t===t));
 
   $("#lg").hidden=!!U;
   const show=h=>{if(my!==tok)return false;app.innerHTML=h;if(!keep)window.scrollTo(0,0);return true};
+  if(name==="services"){location.replace("#/feed");return}
   if(name==="login"){
     if(U&&P){const n=NEXT||"#/";NEXT=null;location.hash=n;return}
     if(!U){show(loginPage());bindLogin();return}
@@ -1583,7 +1626,7 @@ function referral(b){
 
 // ---- Feed (photos) and Q&A ----
 const agoT=t=>{const s=Math.max(1,Math.round((Date.now()-(t||0))/1000));if(s<60)return"just now";const m=Math.round(s/60);if(m<60)return m+" min ago";const h=Math.round(m/60);if(h<24)return h+" hr ago";const d=Math.round(h/24);return d<30?d+" day"+(d>1?"s":"")+" ago":fmtDate(t)};
-const segSvc=on=>`<div class="seg" style="margin-bottom:10px"><a href="#/services" class="${on==="s"?"on":""}">🛠️ Services</a><a href="#/feed" class="${on==="f"?"on":""}">📸 Feed</a><a href="#/qa" class="${on==="q"?"on":""}">❓ Q&amp;A</a></div>`;
+const segSvc=on=>`<div class="seg" style="margin-bottom:10px"><a href="#/feed" class="${on==="f"?"on":""}">📸 Photos</a><a href="#/qa" class="${on==="q"?"on":""}">❓ Questions</a></div>`;
 const initial=n=>esc(String(n||"?").trim().charAt(0).toUpperCase()||"?");
 function postHtml(p,my,full){
   const liked=my.likes.has(p.id),saved=my.saved.has(p.id),own=U&&p.uid===U.uid;
@@ -1603,11 +1646,16 @@ async function myMarks(){
   return my;
 }
 pages.feed=async()=>{
-  let l=[];try{l=rows(await fb.getDocs(fb.query(col("posts"),fb.orderBy("t","desc"),fb.limit(25))))}catch(e){console.warn(e)}
-  const my=await myMarks();
-  return `<h1>Services</h1>${segSvc("f")}
-  <button class="btn g" data-x="newpost|x">➕ Share a photo</button>
-  <div style="margin-top:12px">${l.length?l.map(p=>postHtml(p,my)).join(""):`<div class="empty"><b>📸 No posts yet</b>Be the first to share your work or a photo.</div>`}</div>`;
+  let ps=[];try{ps=rows(await fb.getDocs(fb.query(col("posts"),fb.orderBy("t","desc"),fb.limit(25))))}catch(e){console.warn(e)}
+  const [my,bl]=await Promise.all([myMarks(),approved().catch(()=>[])]);
+  const bp=bl.filter(b=>(b.imgs&&b.imgs[0])||b.img).map(b=>({kind:"b",b,t:b.t||0}));
+  const items=[...ps.map(p=>({kind:"p",p,t:p.t||0})),...bp].sort((a,b)=>b.t-a.t).slice(0,30);
+  const bhtml=b=>`<article class="card post"><div class="ph"><span class="av">${initial(b.name)}</span><div><b><a href="#/biz/${esc(b.id)}">${esc(b.name)}</a></b><p class="muted small" style="margin:0">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · ${esc(b.area)}, ${esc(b.city)}</p></div></div>
+    <a href="#/biz/${esc(b.id)}"><img class="pimg" loading="lazy" src="${esc((b.imgs&&b.imgs[0])||b.img)}" alt=""></a>
+    <div class="pact"><a class="btn g s" href="#/biz/${esc(b.id)}" style="font-size:.85rem">View business</a><button data-x="share|${esc(b.id)}" aria-label="Share">↗️</button></div></article>`;
+  return `<h1>📸 Feed</h1>${segSvc("f")}
+  <div class="card pad composer"><span class="av">${initial((P&&P.name)||"You")}</span><button class="cin" data-x="newpost|x">Share a photo or your work…</button><button class="btn o s" data-x="newq|x">❓ Ask</button></div>
+  <div style="margin-top:12px">${items.length?items.map(i=>i.kind==="p"?postHtml(i.p,my):bhtml(i.b)).join(""):`<div class="empty"><b>📸 No photos yet</b>Be the first to share a photo.</div>`}</div>`;
 };
 pages.post=async(q,id)=>{
   const d=await fb.getDoc(dref("posts",id));
@@ -1666,7 +1714,7 @@ XH.reportpost=async id=>{const why=prompt("What is wrong with this post?");if(wh
 // ---- Q&A ----
 pages.qa=async()=>{
   let l=[];try{l=rows(await fb.getDocs(fb.query(col("qs"),fb.orderBy("t","desc"),fb.limit(40))))}catch(e){console.warn(e)}
-  return `<h1>Services</h1>${segSvc("q")}
+  return `<h1>📸 Feed</h1>${segSvc("q")}
   <button class="btn g" data-x="newq|x">❓ Ask a question</button>
   <div style="margin-top:12px">${l.length?l.map(x=>`<a class="card pad qi" href="#/q/${esc(x.id)}" style="display:block;color:var(--ink);margin-bottom:10px"><b>${esc(x.q)}</b><p class="muted small" style="margin:4px 0 0">${esc(x.name||"User")} · ${agoT(x.t)} · 💬 ${x.ans||0} answer${(x.ans||0)===1?"":"s"}</p></a>`).join(""):`<div class="empty"><b>❓ No questions yet</b>Ask anything about services, shops or business. Others will answer.</div>`}</div>`;
 };
@@ -1722,8 +1770,9 @@ try{const c=localStorage.getItem("bc_pc2:"+(location.hash||"#/"));if(c&&!app.que
     try{const nu=user?user.uid:"-";if(localStorage.getItem("bc_uid")!==nu){Object.keys(localStorage).filter(k=>k.startsWith("bc_pc2:")).forEach(k=>localStorage.removeItem(k));localStorage.setItem("bc_uid",nu)}}catch{}
     U=user;P=null;ADMIN=false;SAVED=new Set();
     if(user){
+      const ex=loadExtras();
       try{const s=await fb.getDoc(dref("users",user.uid));P=s.exists()?s.data():null}catch(e){console.error(e)}
-      if(P)await loadExtras();
+      await ex;
     }
     READY=true;
     if(user&&P&&location.hash.startsWith("#/login")){const n=NEXT||"#/";NEXT=null;location.hash=n;return}
