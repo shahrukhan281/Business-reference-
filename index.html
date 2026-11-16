@@ -163,10 +163,10 @@ nav a i{font-style:normal;font-size:1.45rem;line-height:1.1}nav a.on{color:var(-
 
 /* services, slider, news, ai */
 nav a{font-size:.72rem}nav a i{font-size:1.45rem}
-.slider{position:relative}
+.slider{position:relative;max-width:520px;margin:0 auto}
 .sl{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;border-radius:16px;background:var(--soft)}
 .sl::-webkit-scrollbar{display:none}
-.sl img{flex:none;width:100%;height:230px;object-fit:cover;scroll-snap-align:center}
+.sl img{flex:none;width:100%;aspect-ratio:1/1;height:auto;object-fit:cover;scroll-snap-align:center}
 .dots{display:flex;gap:6px;justify-content:center;margin-top:8px}
 .dots i{width:7px;height:7px;border-radius:50%;background:var(--line)}.dots i.on{background:var(--blue);width:18px;border-radius:6px}
 .sv{padding:14px;margin-bottom:12px}
@@ -250,7 +250,8 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
 .post{padding:0;overflow:hidden;margin-bottom:12px}
 .ph{display:flex;gap:10px;align-items:center;padding:10px 12px}.ph>div{flex:1}.ph a{color:var(--ink)}
 .av{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
-.pimg{width:100%;display:block;max-height:480px;object-fit:cover;background:var(--soft)}
+.pimg{width:100%;display:block;aspect-ratio:1/1;height:auto;object-fit:cover;background:var(--soft)}
+.feedcol{max-width:520px;margin:0 auto}
 .pact{display:flex;gap:14px;align-items:center;padding:8px 12px}
 .pact button,.pact a{background:none;border:0;font-size:1.15rem;color:var(--ink);cursor:pointer;padding:2px;font-weight:600}
 .pact .lk.on{color:#e53935}.pact b{font-size:.9rem}
@@ -527,19 +528,20 @@ async function share(title,url){
 }
 
 // ---- photo picker with crop ----
-const PHOTO_HELP="Best size: 1200 × 900 px (4:3), JPG or PNG, up to 8 MB. You can crop it next. We shrink it for you.";
+const PHOTO_HELP="Best size: 1080 × 1080 px (square, like Instagram). JPG or PNG, up to 8 MB. We make it square and sharp for you.";
+function encodeFit(draw,size,budget){let s=size,q=.86,d="";for(let i=0;i<14;i++){const o=document.createElement("canvas");o.width=o.height=Math.round(s);draw(o.getContext("2d"),o.width);d=o.toDataURL("image/jpeg",q);if(d.length<=budget)return d;if(q>.52)q-=.07;else s*=.88}return d}
 function loadImg(file){return new Promise((ok,no)=>{const u=URL.createObjectURL(file),im=new Image();im.onload=()=>ok(im);im.onerror=()=>no(new Error("This file is not a picture."));im.src=u})}
-function cropper(file,aspect0){
+function cropper(file,aspect0,budget){
+  budget=budget||190000;
   return new Promise(async res=>{
     if(file.size>8*1024*1024){toast("This photo is bigger than 8 MB.");return res(null)}
     let im;try{im=await loadImg(file)}catch(e){toast(e.message);return res(null)}
-    let done=false,asp=aspect0||4/3,z=1,ox=0,oy=0;
+    let done=false,asp=1,z=1,ox=0,oy=0;
     const W=Math.min(320,innerWidth-70);
     const m=modal(`<h2>Crop photo</h2><p class="muted small">${PHOTO_HELP}</p>
-      <div class="row" id="cr-asp" style="margin:8px 0">${[["1:1",1],["4:3",4/3],["16:9",16/9],["3:4",3/4]].map(([l,v])=>`<button type="button" class="btn o s" data-a="${v}">${l}</button>`).join("")}</div>
       <div style="display:flex;justify-content:center"><canvas id="cr-c" style="touch-action:none;border-radius:12px;background:#000;max-width:100%"></canvas></div>
       <label>Zoom</label><input type="range" id="cr-z" min="1" max="4" step="0.01" value="1">
-      <div class="row" style="margin-top:12px"><button type="button" class="btn g" id="cr-ok">✔ Use photo</button><button type="button" class="btn o" id="cr-skip">Skip crop</button></div>`);
+      <div class="row" style="margin-top:12px"><button type="button" class="btn g" id="cr-ok">✔ Use photo</button><button type="button" class="btn o" id="cr-skip">Auto fit</button></div>`);
     const fin=v=>{if(done)return;done=true;URL.revokeObjectURL(im.src);res(v)};
     const oc=m.close;m.close=()=>{oc.call(m);fin(null)};
     const cv=$("#cr-c",m),cx=cv.getContext("2d");
@@ -557,17 +559,15 @@ function cropper(file,aspect0){
     cv.onpointermove=e=>{if(!drag)return;const k=cv.width/cv.getBoundingClientRect().width;ox=drag.ox+(e.clientX-drag.x)*k;oy=drag.oy+(e.clientY-drag.y)*k;draw()};
     cv.onpointerup=cv.onpointercancel=()=>{drag=null};
     $("#cr-ok",m).onclick=()=>{
-      const outW=Math.min(900,Math.round(cv.width*3)),k=outW/cv.width,o=document.createElement("canvas");o.width=outW;o.height=Math.round(cv.height*k);
-      const s=cover()*z*k;o.getContext("2d").drawImage(im,ox*k,oy*k,im.width*s,im.height*s);
-      const data=o.toDataURL("image/jpeg",.72);fin(data);oc.call(m);
+      const data=encodeFit((c,w)=>{const k=w/cv.width,s=cover()*z*k;c.fillStyle="#fff";c.fillRect(0,0,w,w);c.drawImage(im,ox*k,oy*k,im.width*s,im.height*s)},1080,budget);fin(data);oc.call(m);
     };
-    $("#cr-skip",m).onclick=async()=>{try{fin(await shrink(file))}catch{fin(null)}oc.call(m)};
+    $("#cr-skip",m).onclick=()=>{const data=encodeFit((c,w)=>{const s=Math.max(w/im.width,w/im.height);c.fillStyle="#fff";c.fillRect(0,0,w,w);c.drawImage(im,(w-im.width*s)/2,(w-im.height*s)/2,im.width*s,im.height*s)},1080,budget);fin(data);oc.call(m)};
   });
 }
 // pick up to "max" photos, cropping each one
-async function pickImages(files,max,aspect){
+async function pickImages(files,max,aspect,budget){
   const out=[];
-  for(const f of [...files].slice(0,max||4)){const d=await cropper(f,aspect);if(d)out.push(d)}
+  for(const f of [...files].slice(0,max||4)){const d=await cropper(f,aspect,budget);if(d)out.push(d)}
   return out;
 }
 // small compress for chat pictures
@@ -693,7 +693,7 @@ async function photosFor(form,data){
   const lf=form.elements.logo&&form.elements.logo.files[0];
   if(lf){data.logo=await imgData(lf,240,.8)}else if(form.elements.rmlogo&&form.elements.rmlogo.checked)data.logo="";
   const files=[...form.elements.photo.files];
-  if(files.length){const imgs=await pickImages(files,4,4/3);if(imgs.length){data.imgs=imgs;data.img=imgs[0]}}
+  if(files.length){const imgs=await pickImages(files,4,1,190000);if(imgs.length){data.imgs=imgs;data.img=imgs[0]}}
   else if(form.elements.rmph&&form.elements.rmph.checked){data.imgs=[];data.img=""}
 }
 // ---- pages ----
@@ -988,7 +988,7 @@ async function articleModal(ex){
     if(bd.length<30)return er.textContent="Please write a little more text (at least 30 letters).";
     const btn=$("#wg",m);btn.disabled=true;
     try{
-      const d={title:t,body:bd};const f=$("#wi",m).files[0];if(f){const r=await pickImages([f],1,16/9);if(r[0])d.img=r[0]}
+      const d={title:t,body:bd};const f=$("#wi",m).files[0];if(f){const r=await pickImages([f],1,1,500000);if(r[0])d.img=r[0]}
       if(ex){const u={...d,upd:Date.now()};if(!ADMIN)u.status="pending";await fb.updateDoc(dref("articles",ex.id),u)}
       else await fb.addDoc(col("articles"),{img:"",...d,authorUid:U.uid,authorName:ADMIN?"BusinessConnect":b.name,bizId:ADMIN?"":U.uid,status:ADMIN?"approved":"pending",t:Date.now()});
       m.close();toast(ADMIN||ex?"Saved":"Sent for approval");route(true);
@@ -1673,10 +1673,10 @@ pages.feed=async()=>{
   const bp=[];bl.forEach(b=>{const ims=[...new Set((b.imgs&&b.imgs.length?b.imgs:[b.img]).filter(Boolean))];ims.forEach((im,k)=>bp.push({kind:"b",b,im,n:k+1,tot:ims.length,t:(b.t||0)-k}))});
   const items=[...ps.map(p=>({kind:"p",p,t:p.t||0})),...bp].sort((a,b)=>b.t-a.t);
   FEED={items,my,shown:0};
-  return `${segSvc("f")}
+  return `<div class="feedcol">${segSvc("f")}
   <div class="card composer"><span class="av">${initial((P&&P.name)||"You")}</span><button class="cin" data-x="newpost|x">Share a photo or your work…</button><button class="btn o s askb" data-x="newq|x">❓ Ask</button></div>
   <div id="fl" style="margin-top:10px">${items.length?"":`<div class="empty"><b>📸 No photos yet</b>Be the first to share a photo.</div>`}</div>
-  <button class="btn o big" id="fm" data-x="feedmore|x" ${items.length>12?"":"hidden"} style="margin:8px 0">Show more</button>`;
+  <button class="btn o big" id="fm" data-x="feedmore|x" ${items.length>12?"":"hidden"} style="margin:8px 0">Show more</button></div>`;
 };
 BIND.feed=()=>{
   feedMore();
@@ -1688,12 +1688,12 @@ pages.post=async(q,id)=>{
   if(!d.exists())return `<div class="empty"><b>Post not found</b><a class="btn" href="#/feed">Back</a></div>`;
   const p={id,...d.data()},my=await myMarks();
   let cs=[];try{cs=rows(await fb.getDocs(fb.query(col("posts/"+id+"/cmts"),fb.orderBy("t"))))}catch(e){console.warn(e)}
-  return `<p style="margin:12px 0"><a href="#/feed"><b>← Feed</b></a></p>${postHtml(p,my,true)}
+  return `<div class="feedcol"><p style="margin:12px 0"><a href="#/feed"><b>← Feed</b></a></p>${postHtml(p,my,true)}
   <div class="card pad" style="margin-top:12px"><h3>Comments (${cs.length})</h3>
    ${cs.map(c=>`<div class="rv"><div class="row between"><b>${esc(c.name||"User")}</b><span class="muted small">${agoT(c.t)}${(ADMIN||(U&&c.uid===U.uid))?` · <a href="#" data-x="delcmt|${esc(id)}|${esc(c.id)}">Delete</a>`:""}</span></div><p style="margin:2px 0">${esc(c.text)}</p></div>`).join("")||`<p class="muted small">No comments yet.</p>`}
    ${U?`<form id="cmf" class="row" style="flex-wrap:nowrap;margin-top:10px"><input name="t" maxlength="300" placeholder="Write a comment…" autocomplete="off"><button class="btn g s">Post</button></form>`:`<button class="btn g s" data-x="rvlogin|x" style="margin-top:10px">Login to comment</button>`}
   </div>
-  ${U&&p.uid!==U.uid?`<p style="margin:10px 0"><a href="#" data-x="reportpost|${esc(id)}">🚩 Report this post</a></p>`:""}`;
+  ${U&&p.uid!==U.uid?`<p style="margin:10px 0"><a href="#" data-x="reportpost|${esc(id)}">🚩 Report this post</a></p>`:""}</div>`;
 };
 BIND.post=()=>{
   const f=$("#cmf");if(!f)return;const id=location.hash.split("?")[0].split("/")[2];
@@ -1708,7 +1708,7 @@ XH.newpost=()=>{
    <label>Photo</label><input type="file" id="pf1" accept="image/*"><div id="pv"></div>
    <label>Write something <small>(optional)</small></label><textarea id="pt1" rows="3" maxlength="400"></textarea>
    <p class="err" id="pe1"></p><button class="btn g big" id="pg1">Post</button>`);
-  $("#pf1",m).onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=await pickImages([f],1,1);if(r.length){img=r[0];$("#pv",m).innerHTML=`<img src="${img}" alt="" style="width:100%;border-radius:12px;margin-top:8px">`}};
+  $("#pf1",m).onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=await pickImages([f],1,1,650000);if(r.length){img=r[0];$("#pv",m).innerHTML=`<img src="${img}" alt="" style="width:100%;border-radius:12px;margin-top:8px">`}};
   $("#pg1",m).onclick=async()=>{
     const text=$("#pt1",m).value.trim(),er=$("#pe1",m);
     if(!img&&!text)return er.textContent="Please add a photo or write something.";
