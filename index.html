@@ -239,6 +239,22 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
  .m{box-shadow:none!important;max-height:none!important;overflow:visible!important;border:0!important;width:auto!important;max-width:none!important}
  .inv{border:0}
 }
+.card.go{cursor:pointer}
+.subg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.subg a{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 6px;text-align:center;font-size:.8rem;font-weight:700;color:var(--ink)}
+.subg a.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.blogo{width:44px;height:44px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff;flex:none}
+.ivlogo{max-height:48px;max-width:120px;object-fit:contain;display:block;margin-bottom:4px}
+.chips2 a{background:var(--soft);border-radius:16px;padding:5px 10px;font-size:.82rem;font-weight:700;color:var(--blue)}
+.post{padding:0;overflow:hidden;margin-bottom:12px}
+.ph{display:flex;gap:10px;align-items:center;padding:10px 12px}.ph>div{flex:1}.ph a{color:var(--ink)}
+.av{width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;flex:none}
+.pimg{width:100%;display:block;max-height:480px;object-fit:cover;background:var(--soft)}
+.pact{display:flex;gap:14px;align-items:center;padding:8px 12px}
+.pact button,.pact a{background:none;border:0;font-size:1.15rem;color:var(--ink);cursor:pointer;padding:2px;font-weight:600}
+.pact .lk.on{color:#e53935}.pact b{font-size:.9rem}
+.pt{margin:0;padding:0 12px 12px;white-space:pre-wrap}
+.post>a.small{display:block;padding:0 12px 12px}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
@@ -279,14 +295,15 @@ const firebaseConfig = {
 // ============ small helpers ============
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Clothing and Fashion":"👗","Grocery":"🛒","Restaurants and Hotels":"🍽️","Automobile":"🚗","Education":"🎓","Coaching Classes":"📚","Travel and Tourism":"✈️","Beauty and Salon":"💇","Healthcare Services":"🏥","Construction":"🏗️","Interior Design":"🛋️","Furniture":"🪑","Digital Marketing":"📣","Web Development":"💻","Insurance":"🛡️","Financial Services":"💰","Event Management":"🎉","Wholesale and Retail":"📦","Other Services":"🧰"};
+const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Clothing and Fashion":"👗","Grocery":"🛒","Restaurants and Hotels":"🍽️","Automobile":"🚗","Education":"🎓","Coaching Classes":"📚","Travel and Tourism":"✈️","Beauty and Salon":"💇","Healthcare Services":"🏥","Construction":"🏗️","Interior Design":"🛋️","Electrician":"⚡","Plumber":"🚰","Computer and IT Classes":"🖥️","Inverter and Battery":"🔋","Furniture":"🪑","Digital Marketing":"📣","Web Development":"💻","Insurance":"🛡️","Financial Services":"💰","Event Management":"🎉","Wholesale and Retail":"📦","Other Services":"🧰"};
 const SHORT={"Clothing and Fashion":"Fashion","Restaurants and Hotels":"Food & Hotels","Healthcare Services":"Health","Wholesale and Retail":"Wholesale","Financial Services":"Finance","Travel and Tourism":"Travel","Event Management":"Events"};
 const catName=c=>SHORT[c]||c;
 const art=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='400' height='300' fill='url(#g)'/><text x='200' y='195' font-size='120' text-anchor='middle'>${e}</text></svg>`);
 const imgOf=b=>b.img||art(CATS[b.cat]||"🏪","#eef3f8","#dbe6f2");
 const toast=m=>{const t=$("#toast");t.firstElementChild.textContent=m;t.classList.add("on");clearTimeout(toast.t);toast.t=setTimeout(()=>t.classList.remove("on"),3000)};
-const earnText=b=>b.ct==="percent"?`${b.cv}% commission`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")} per customer`:"Talk to owner";
-const earnShort=b=>b.ct==="percent"?`${b.cv}%`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")}`:"Negotiable";
+const noCm=b=>b.ct==="none";
+const earnText=b=>b.ct==="none"?"No commission":b.ct==="percent"?`${b.cv}% commission`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")} per customer`:"Talk to owner";
+const earnShort=b=>b.ct==="none"?"":b.ct==="percent"?`${b.cv}%`:b.ct==="fixed"?`₹${Number(b.cv).toLocaleString("en-IN")}`:"Negotiable";
 const waTo=(p,t="")=>p.length===10?wa(p,t):"https://wa.me/?text="+encodeURIComponent(t);
 const wa=(p,t="")=>`https://wa.me/91${p}${t?"?text="+encodeURIComponent(t):""}`;
 const fmtD=d=>new Date(d).toLocaleDateString("en-IN",{day:"numeric",month:"short"});
@@ -528,18 +545,56 @@ async function pickImages(files,max,aspect){
   return out;
 }
 // small compress for chat pictures
-function imgData(file,max,q){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);c.getContext("2d").drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",q))};im.src=fr.result};fr.readAsDataURL(file)})}
+function imgData(file,max,q){return new Promise((ok,no)=>{const fr=new FileReader();fr.onerror=no;fr.onload=()=>{const im=new Image();im.onerror=no;im.onload=()=>{const k=Math.min(1,max/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=Math.round(im.width*k);c.height=Math.round(im.height*k);const x=c.getContext("2d");x.fillStyle="#fff";x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);ok(c.toDataURL("image/jpeg",q))};im.src=fr.result};fr.readAsDataURL(file)})}
 
 // ---- business card, form, pages ----
 const XH={};
+const cleanPhone=v=>{let d=String(v||"").replace(/\D/g,"");if(d.length>10)d=d.replace(/^(91|0)/,"");return d.slice(0,10)};
+const SUBS={"Beauty and Salon":["Hair Cut","Facial","Manicure","Pedicure","Hair Color","Threading","Hair Styling","Waxing","Bridal Makeup","Party Makeup","Hair Straightening","Nail Extensions"],
+"Electrician":["Wiring","Fan Repair","Switch Board","Inverter Fitting","MCB Repair","Light Fitting","AC Wiring","Geyser Repair"],
+"Plumber":["Tap Repair","Pipe Leakage","Bathroom Fitting","Water Tank Cleaning","Drain Blockage","Motor Pump","Geyser Fitting"],
+"Computer and IT Classes":["Python","Java","Web Development","Data Science","Tally","MS Office","Digital Marketing","Networking"],
+"Inverter and Battery":["Inverter Sale","Battery Sale","Battery Repair","Installation","Old Battery Exchange"],
+"Interior Design":["Modular Kitchen","Wardrobe","False Ceiling","Full Home Interior","Living Room","Bedroom"],
+"Healthcare Services":["General Physician","Dentist","Physiotherapy","Lab Test","Eye Check-up"],
+"Education":["Maths Tuition","Science Tuition","English Speaking","School Admission"],
+"Coaching Classes":["NEET","JEE","UPSC","Bank Exams","Spoken English"],
+"Automobile":["Car Wash","Bike Service","Car Repair","Tyre Change","Car Insurance"],
+"Restaurants and Hotels":["Home Delivery","Catering","Party Hall","Room Booking"],
+"Real Estate":["Flat for Rent","Flat for Sale","PG","Shop on Rent","Plot"],
+"Construction":["Painting","Tiling","Waterproofing","Carpentry","Plumbing Work"],
+"Event Management":["Wedding","Birthday","Corporate Event","Decoration"],
+"Travel and Tourism":["Cab Booking","Tour Package","Flight Tickets","Hotel Booking"],
+"Mobile Phones":["Screen Repair","Battery Change","New Phone","Second Hand Phone"],
+"Electronics":["AC Repair","TV Repair","Fridge Repair","Washing Machine Repair"]};
+const catMatch=v=>{v=String(v||"").trim().toLowerCase();return Object.keys(CATS).find(c=>c.toLowerCase()===v)||""};
+function parseLatLng(s){
+  s=String(s||"");let m;
+  const ok=(a,b)=>{a=+a;b=+b;return Math.abs(a)<=90&&Math.abs(b)<=180&&(a||b)?{lat:a,lng:b}:null};
+  if(m=s.match(/@(-?\d+\.?\d*),(-?\d+\.?\d*)/))return ok(m[1],m[2]);
+  if(m=s.match(/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/))return ok(m[1],m[2]);
+  if(m=s.match(/[?&](?:q|query|ll|destination)=(-?\d+\.?\d*)(?:,|%2C)(-?\d+\.?\d*)/))return ok(m[1],m[2]);
+  if(m=s.trim().match(/^(-?\d+\.?\d*)\s*[, ]\s*(-?\d+\.?\d*)$/))return ok(m[1],m[2]);
+  return null;
+}
+// ---- one mobile number = one business (registry: phones/{number}) ----
+async function phoneOps(b,phone,bizId,oldPhone){
+  const d=await fb.getDoc(dref("phones",phone));if(!d.exists())b.set(dref("phones",phone),{bizId,t:Date.now()});
+  if(oldPhone&&oldPhone!==phone){const o=await fb.getDoc(dref("phones",oldPhone));if(o.exists()&&o.data().bizId===bizId)b.delete(dref("phones",oldPhone))}
+}
+async function freePhone(phone,bizId){try{if(!phone)return;const o=await fb.getDoc(dref("phones",phone));if(o.exists()&&o.data().bizId===bizId)await fb.deleteDoc(dref("phones",phone))}catch(e){console.warn(e)}}
+async function phoneTaken(phone,myId){
+  try{const d=await fb.getDoc(dref("phones",phone));if(d.exists()&&d.data().bizId!==myId)return true}catch(e){console.warn(e)}
+  return false;
+}
 function card(b){
   const sv=SAVED.has(b.id),rt=RV.map[b.id],d=distKm(b);
   const meta=[rt?`⭐ ${(rt.s/rt.n).toFixed(1)} (${rt.n})`:"",d!=null?`📍 ${kmText(d)} away`:""].filter(Boolean).join(" · ");
-  return `<article class="card biz">
+  return `<article class="card biz go" data-go="${esc(b.id)}">
     <div class="top"><a class="pic" href="#/biz/${esc(b.id)}"><img loading="lazy" src="${esc(imgOf(b))}" alt=""></a>
     <div class="inf"><h3>${esc(b.name)}</h3>
       <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))}<br>📍 ${esc(b.area)}, ${esc(b.city)}</p>
-      <span class="earn2">💸 ${esc(earnShort(b))}</span>${meta?`<span class="meta">${meta}</span>`:""}</div></div>
+      ${noCm(b)?"":`<span class="earn2">💸 ${esc(earnShort(b))}</span>`}${meta?`<span class="meta">${meta}</span>`:""}</div></div>
     ${hasTiming(b)?`<p class="oh">${openLabel(b)}</p>`:""}
     <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a>${contactHtml(b,"Hi, I found "+b.name+" on BusinessConnect.")}<button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button></div>
   </article>`;
@@ -550,17 +605,18 @@ function bizForm(b,adm){
   const cur=(b.imgs&&b.imgs.length)?b.imgs:(b.img?[b.img]:[]);
   return `
     <label>Shop / Business name</label><input name="name" maxlength="70" value="${esc(b.name)}">
-    <label>What do you sell?</label><select name="cat"><option value="">Choose one</option>${Object.keys(CATS).map(c=>`<option ${b.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <label>Category <small>(type to search)</small></label><input name="cat" list="catl" autocomplete="off" placeholder="Example: Plumber, Salon, Electrician" value="${esc(b.cat)}"><datalist id="catl">${Object.keys(CATS).map(c=>`<option value="${esc(c)}">`).join("")}</datalist>
     <label>${adm?"Owner's name":"Your name"}</label><input name="owner" maxlength="60" value="${esc(b.owner)}">
-    <label>Mobile / WhatsApp number</label><input name="phone" type="tel" inputmode="numeric" maxlength="10" value="${esc(b.phone)}">
+    <label>Mobile / WhatsApp number</label><input name="phone" type="tel" inputmode="numeric" placeholder="10-digit number" value="${esc(b.phone)}"><p class="muted small" style="margin:2px 0 0">One mobile number can be used for one business only.</p>
     <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>City</label><input name="city" maxlength="40" value="${esc(b.city)}"></div><div style="flex:1"><label>Area</label><input name="area" maxlength="50" value="${esc(b.area)}"></div></div>
-    <label>💸 How much commission will you give?</label>
+    <label class="check" style="margin-top:14px"><input type="checkbox" name="cm" ${b.ct==="none"?"":"checked"}><span><b>💸 Give commission to people who refer customers</b><br><small class="muted">Turn off if you do not want referrals.</small></span></label>
+    <div class="cmbox"><label>How much commission will you give?</label>
     <select name="ct" class="ct"><option value="percent" ${b.ct==="percent"?"selected":""}>Percent of the bill (%)</option><option value="fixed" ${b.ct==="fixed"?"selected":""}>Fixed money (₹)</option><option value="talk" ${b.ct==="talk"?"selected":""}>Talk to me first</option></select>
     <div class="cvw"><label class="cvl">Amount</label><input name="cv" type="number" min="0" step="any" value="${b.cv?esc(b.cv):""}"></div>
-    <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="Example: Paid within 7 days after the customer pays.">${esc(b.note)}</textarea>
+    <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="Example: Paid within 7 days after the customer pays.">${esc(b.note)}</textarea></div>
     <label>About your business <small>(optional)</small></label><textarea name="desc" rows="3" maxlength="400">${esc(b.desc)}</textarea>
     <label>Keywords <small>(help people find you, separate with commas)</small></label><input name="tags" maxlength="160" placeholder="Example: thai massage, spa, body massage" value="${esc(b.tags)}">
-    <label>Services you offer <small>(optional, one per line, price after a dash)</small></label><textarea name="svc" rows="4" maxlength="600" placeholder="Thai massage - ₹1500&#10;Foot massage - ₹800">${esc(b.svc)}</textarea>
+    <label>Services you offer <small>(optional, one per line, price after a dash)</small></label><div class="svchips"></div><textarea name="svc" rows="4" maxlength="600" placeholder="Thai massage - ₹1500&#10;Foot massage - ₹800">${esc(b.svc)}</textarea>
     <h3 class="fh">🕘 Business timing</h3><p class="muted small" style="margin:0">Call and WhatsApp buttons show only in these hours. Leave empty to show always.</p>
     <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>Opens</label><input type="time" name="open" value="${esc(b.open)}"></div><div style="flex:1"><label>Closes</label><input type="time" name="close" value="${esc(b.close)}"></div></div>
     <div class="dayrow">${DAYN.map((n,i)=>`<label class="dchip"><input type="checkbox" name="d" value="${i}" ${dsel.includes(i)?"checked":""}><span>${n}</span></label>`).join("")}</div>
@@ -571,6 +627,8 @@ function bizForm(b,adm){
     <h3 class="fh">📍 Shop location</h3><p class="muted small" style="margin:0">Stand at the shop and tap the button. People can then find you with “Near me”.</p>
     <input type="hidden" name="lat" value="${b.lat==null?"":esc(b.lat)}"><input type="hidden" name="lng" value="${b.lng==null?"":esc(b.lng)}">
     <div class="row" style="margin-top:8px"><button type="button" class="btn o s locbtn">📍 Use my current location</button><span class="small muted locst">${b.lat!=null&&b.lat!==""?"✔ Location saved":"Not saved yet"}</span></div>
+    <label>Or paste a Google Maps link / write latitude, longitude</label><div class="row" style="flex-wrap:nowrap"><input class="mlin" placeholder="18.5204, 73.8567 or Maps link"><button type="button" class="btn o s mlbtn">Save</button></div>
+    <h3 class="fh">🏷️ Logo <small class="muted">(optional)</small></h3>${b.logo&&safeData(b.logo)?`<img src="${b.logo}" alt="" style="width:56px;height:56px;object-fit:contain;border-radius:10px;border:1px solid var(--line);background:#fff"><label class="check" style="margin-top:6px"><input type="checkbox" name="rmlogo"><span>Remove logo</span></label>`:""}<input type="file" name="logo" accept="image/*" style="margin-top:6px">
     <h3 class="fh">🖼️ Photos <small class="muted">(up to 4)</small></h3><p class="muted small" style="margin:0">${PHOTO_HELP}</p>
     <input type="file" name="photo" accept="image/*" multiple style="margin-top:8px">
     ${cur.length?`<div class="row" style="margin-top:8px">${cur.map(i=>`<img src="${esc(i)}" alt="" style="width:64px;height:64px;object-fit:cover;border-radius:10px">`).join("")}</div><label class="check" style="margin-top:8px"><input type="checkbox" name="rmph"><span>Remove these photos</span></label>`:""}`;
@@ -580,25 +638,34 @@ function socialUrl(k,v){v=String(v||"").trim();if(!v)return"";if(k==="ig"&&/^@?[
 function readBiz(form){
   const f=new FormData(form),g=k=>String(f.get(k)||"").trim();
   if(!g("name"))return{error:"Please write the business name."};
-  if(!g("cat"))return{error:"Please choose what is sold."};
+  const cat=catMatch(g("cat"));if(!cat)return{error:"Please pick a category from the list (start typing to search)."};
   if(!g("owner"))return{error:"Please write the owner's name."};
-  if(!/^[6-9]\d{9}$/.test(g("phone")))return{error:"Please write a correct 10-digit mobile number."};
+  const phone=cleanPhone(g("phone"));if(!/^[6-9]\d{9}$/.test(phone))return{error:"Please write a correct 10-digit mobile number."};
   if(!g("city")||!g("area"))return{error:"Please write the city and area."};
-  const ct=g("ct"),cv=+g("cv");
-  if(ct!=="talk"&&!(cv>0))return{error:"Please write the commission amount."};
+  const cmOn=!!f.get("cm");let ct=cmOn?g("ct"):"none",cv=+g("cv");
+  if(ct!=="talk"&&ct!=="none"&&!(cv>0))return{error:"Please write the commission amount."};
   if(ct==="percent"&&cv>100)return{error:"Percent cannot be more than 100."};
   const gst=g("gst").toUpperCase();if(gst&&!GSTRE.test(gst))return{error:"The GST number does not look right. It has 15 letters and numbers, or leave it empty."};
   const open=g("open"),close=g("close");if(!!open!==!!close)return{error:"Please fill both opening and closing time, or leave both empty."};
   const lat=parseFloat(g("lat")),lng=parseFloat(g("lng"));
-  return{data:{name:g("name"),cat:g("cat"),owner:g("owner"),phone:g("phone"),city:g("city"),area:g("area"),ct,cv:ct==="talk"?0:cv,note:g("note"),desc:g("desc"),tags:g("tags"),svc:g("svc"),
+  return{data:{name:g("name"),cat,owner:g("owner"),phone,city:g("city"),area:g("area"),ct,cv:(ct==="talk"||ct==="none")?0:cv,note:cmOn?g("note"):"",desc:g("desc"),tags:g("tags"),svc:g("svc"),
     open,close,days:f.getAll("d").map(Number).sort(),gst,ig:socialUrl("ig",g("ig")),fb:socialUrl("fb",g("fb")),yt:socialUrl("yt",g("yt")),web:socialUrl("web",g("web")),lat:isNaN(lat)?null:lat,lng:isNaN(lng)?null:lng}};
 }
 function bindBizForm(form){
   const sync=()=>{const t=$(".ct",form).value;$(".cvw",form).hidden=t==="talk";$(".cvl",form).textContent=t==="percent"?"Percent (%) – example: 10":"Amount in ₹ – example: 500"};
   $(".ct",form).onchange=sync;sync();
+  const cmx=form.elements.cm,cmb=$(".cmbox",form),cms=()=>{cmb.hidden=!cmx.checked};cmx.onchange=cms;cms();
+  const ph=form.elements.phone;ph.oninput=()=>{const c=cleanPhone(ph.value);if(c!==ph.value)ph.value=c};ph.value=cleanPhone(ph.value);
+  const chips=$(".svchips",form),ct=form.elements.cat,sv=form.elements.svc;
+  const drawChips=()=>{const l=SUBS[catMatch(ct.value)]||[];chips.innerHTML=l.length?`<p class="muted small" style="margin:2px 0 4px">Tap to add:</p><div class="chips2">${l.map(x=>`<a href="#" data-s="${esc(x)}">+ ${esc(x)}</a>`).join("")}</div>`:""};
+  ct.addEventListener("input",drawChips);ct.addEventListener("change",drawChips);drawChips();
+  chips.onclick=e=>{const a=e.target.closest("[data-s]");if(!a)return;e.preventDefault();const s=a.dataset.s;if(sv.value.toLowerCase().split("\n").some(x=>x.split("-")[0].trim()===s.toLowerCase()))return toast("Already added");sv.value=(sv.value.trim()?sv.value.trim()+"\n":"")+s+" - ₹"};
+  $(".mlbtn",form).onclick=()=>{const st=$(".locst",form),p=parseLatLng($(".mlin",form).value);if(!p){st.textContent="Could not read it. Use: 18.5204, 73.8567 (or a full Google Maps link, not a short link).";return}form.elements.lat.value=p.lat.toFixed(6);form.elements.lng.value=p.lng.toFixed(6);st.textContent="✔ Location saved"};
   $(".locbtn",form).onclick=async()=>{const st=$(".locst",form);st.textContent="Finding…";try{const p=await getPos();form.elements.lat.value=p.lat.toFixed(6);form.elements.lng.value=p.lng.toFixed(6);st.textContent="✔ Location saved"}catch(e){st.textContent=e.message}};
 }
 async function photosFor(form,data){
+  const lf=form.elements.logo&&form.elements.logo.files[0];
+  if(lf){data.logo=await imgData(lf,240,.8)}else if(form.elements.rmlogo&&form.elements.rmlogo.checked)data.logo="";
   const files=[...form.elements.photo.files];
   if(files.length){const imgs=await pickImages(files,4,4/3);if(imgs.length){data.imgs=imgs;data.img=imgs[0]}}
   else if(form.elements.rmph&&form.elements.rmph.checked){data.imgs=[];data.img=""}
@@ -627,8 +694,11 @@ function bindEdit(form){
     try{
       const data=r.data;await photosFor(form,data);
       const ex=await getBiz(U.uid);
-      if(ex)await fb.updateDoc(dref("businesses",U.uid),{...data,upd:Date.now()});
-      else await fb.setDoc(dref("businesses",U.uid),{img:"",...data,ownerUid:U.uid,status:"pending",featured:false,t:Date.now()});
+      if(await phoneTaken(data.phone,U.uid)){btn.disabled=false;btn.textContent=ex?"Save changes":"Send my business (free)";return fail("This mobile number is already used by another business. One number can be used once.")}
+      const wb=fb.writeBatch(db);
+      if(ex)wb.update(dref("businesses",U.uid),{...data,upd:Date.now()});
+      else wb.set(dref("businesses",U.uid),{img:"",...data,ownerUid:U.uid,status:"pending",featured:false,t:Date.now()});
+      await phoneOps(wb,data.phone,U.uid,ex&&ex.phone);await wb.commit();
       bust();toast(ex?"Saved":"Sent for approval!");location.hash="#/shop";
     }catch(x){console.error(x);fail(friendly(x));btn.disabled=false;btn.textContent="Save"}
   };
@@ -646,13 +716,13 @@ pages.biz=async(q,id)=>{
   return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
   ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
   <div class="slider"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
-  <h1 style="margin-top:12px">${esc(b.name)}</h1>
+  <h1 style="margin-top:12px;display:flex;align-items:center;gap:10px">${b.logo&&safeData(b.logo)?`<img src="${b.logo}" alt="" class="blogo">`:""}<span>${esc(b.name)}</span></h1>
   <p class="muted" style="margin:0">${CATS[b.cat]||"🏪"} ${esc(b.cat)} · 📍 ${esc(b.area)}, ${esc(b.city)}${d!=null?" · "+kmText(d)+" away":""}</p>
   <p style="margin:6px 0">${rt?`<a href="#" data-x="torv|x"><b>⭐ ${avg.toFixed(1)}</b> <span class="muted">(${rt.n} review${rt.n>1?"s":""})</span></a>`:`<span class="muted small">No reviews yet</span>`}${hasTiming(b)?` · <span class="small">${openLabel(b)}</span>`:""}</p>
   ${tagsOf(b).length?`<div class="chips" style="margin-top:6px">${tagsOf(b).map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div>`:""}
-  <div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>
+  ${noCm(b)?"":`<div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>`}
   ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`
-  :`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>
+  :`${noCm(b)?"":`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>`}
    <div class="rowbtn" style="margin-top:10px">${isOpen(b)?`<a class="btn" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect and want to refer a customer.")}">💬 WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">📞 Call</a>`:`<span class="closed" style="flex:1">🔒 Closed now · opens ${esc(t12(b.open))}. Call and WhatsApp are available in business hours.</span>`}</div>`}
   <div class="row" style="margin:10px 0"><button class="btn o s" data-x="share|${esc(b.id)}">🔗 Share</button><button class="btn o s" data-x="qr|${esc(b.id)}">🔳 QR code</button><a class="btn o s" target="_blank" rel="noopener" href="${esc(mapsUrl(b))}">🗺️ Map</a></div>
   ${svcOf(b).length?`<div class="card pad" style="margin-top:12px"><h3>Services</h3>${svcOf(b).map(([n,p])=>`<div class="svc"><span>${esc(n)}</span><b>${esc(p)}</b></div>`).join("")}</div>`:""}
@@ -667,9 +737,9 @@ pages.biz=async(q,id)=>{
       <p class="err" id="rve"></p><button class="btn g s" id="rvs" data-stars="${mine?mine.stars:0}">${mine?"Update my review":"Post review"}</button>`}
     ${list.map(r=>`<div class="rv"><div class="row between"><b>${esc(r.name||"User")}</b><span class="stars-s">${stars(r.stars)}</span></div>${r.text?`<p style="margin:2px 0">${esc(r.text)}</p>`:""}<p class="muted small" style="margin:0">${fmtD(r.t)}${U&&(ADMIN||r.uid===U.uid)?` · <a href="#" data-x="delrv|${esc(r.id)}">Delete</a>`:""}</p></div>`).join("")}
   </div>
-  <div class="card pad" style="margin-top:12px"><h3>How to earn here</h3>
+  ${noCm(b)?"":`  <div class="card pad" style="margin-top:12px"><h3>How to earn here</h3>
    <p>1. Tell your customer about this shop.<br>2. Tap “I referred a customer” and write their name.<br>3. Tell the shop your code. When the customer buys, the shop pays you.</p></div>
-  <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>
+  <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>`}
   <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report fake / wrong</button>`}</div>`;
 };
 BIND.biz=()=>{
@@ -716,7 +786,8 @@ pages.list=async(q)=>{
   <form id="lf" class="row" style="flex-wrap:nowrap"><input name="q" type="search" value="${esc(f.q)}" placeholder="Search shop, service or city"><button class="btn g">Search</button></form>
   <div class="chips">${tg("near","1","📍 Near me")}${tg("open","1","🟢 Open now")}${tg("rate","4","⭐ 4 and above")}</div>
   <div class="chips"><a class="${f.cat?"":"on"}" href="${link({cat:""})}">All</a>${cats.map(c=>`<a class="${f.cat===c?"on":""}" href="${link({cat:c})}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>
-  <select id="cityf" aria-label="City"><option value="">📍 All cities</option>${cities.map(c=>`<option ${f.city===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+  ${f.cat&&SUBS[f.cat]?`<h3 style="margin:12px 0 6px">Popular ${esc(catName(f.cat))} services</h3><div class="subg">${SUBS[f.cat].map(s=>`<a class="${f.q===s?"on":""}" href="${link({q:f.q===s?"":s})}">${esc(s)}</a>`).join("")}</div>`:""}
+   <select id="cityf" aria-label="City"><option value="">📍 All cities</option>${cities.map(c=>`<option ${f.city===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
   ${f.near&&!GEO?`<div class="note" id="geonote">📍 Please allow location to see the shops near you…</div>`:""}
   ${f.near&&GEO?`<p class="muted small" style="margin:8px 0 0">Shops without a saved location come last.</p>`:""}
   <p class="muted small" id="cnt" style="margin:12px 0">${res.length} business${res.length===1?"":"es"} found</p>
@@ -738,10 +809,13 @@ function adminAdd(ex){
     const btn=form.querySelector(".big");btn.disabled=true;
     try{
       const base=r.data;await photosFor(form,base);
-      if(ex){await fb.updateDoc(dref("businesses",ex.id),{...base,upd:Date.now()});bust();m.close();toast("Saved");route(true);return}
-      const dup=rows(await fb.getDocs(col("businesses"))).some(x=>x.phone===base.phone&&String(x.name).toLowerCase()===base.name.toLowerCase());
-      if(dup){er.textContent="This business is already added.";btn.disabled=false;return}
-      await fb.addDoc(col("businesses"),{img:"",...base,ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
+      const myId=ex?ex.id:"";
+      const dup=await phoneTaken(base.phone,myId)||rows(await fb.getDocs(col("businesses"))).some(x=>cleanPhone(x.phone)===base.phone&&x.id!==myId);
+      if(dup){er.textContent="This mobile number is already used by another business.";btn.disabled=false;return}
+      const wb=fb.writeBatch(db);
+      if(ex){wb.update(dref("businesses",ex.id),{...base,upd:Date.now()});await phoneOps(wb,base.phone,ex.id,ex.phone);await wb.commit();bust();m.close();toast("Saved");route(true);return}
+      const nr=fb.doc(col("businesses"));
+      wb.set(nr,{img:"",...base,ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});wb.set(dref("phones",base.phone),{bizId:nr.id,t:Date.now()});await wb.commit();
       bust();m.close();toast("Business added");route(true);
     }catch(x){er.textContent=friendly(x);btn.disabled=false}
   };
@@ -997,6 +1071,8 @@ function inWords(n){
   if(n)s+=nw3(n);
   return "Rupees "+s.trim()+" Only";
 }
+const BT={invoice:{T:"INVOICE",n:"Invoice",pl:"Invoices",p:"INV-",bill:"Bill to",due:"Due"},quote:{T:"QUOTATION",n:"Quotation",pl:"Quotations",p:"QT-",bill:"Quotation for",due:"Valid till"},order:{T:"SALES ORDER",n:"Sales order",pl:"Sales orders",p:"SO-",bill:"Sales order for",due:"Delivery by"}};
+const bt0=x=>BT[x]?x:"invoice";
 const blankInv=(type,seller,no)=>({type,no,date:ymd(new Date()),due:"",seller,buyer:{name:"",addr:"",phone:"",gstin:""},items:[{d:"",hsn:"",q:1,r:"",g:18}],
   opts:{gst:!!seller.gstin,hsn:false,disc:false,due:false,notes:true,bank:false,sign:false,intra:true},disc:{type:"pct",v:""},custom:[],notes:"Thank you for your business.",bank:"",signName:""});
 function calc(v){
@@ -1010,12 +1086,12 @@ function calc(v){
 }
 const nn=n=>Number(n||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
 function invHtml(v){
-  const c=calc(v),o=v.opts,s=v.seller,b=v.buyer,T=v.type==="invoice"?"INVOICE":"QUOTATION";
+  const c=calc(v),o=v.opts,s=v.seller,b=v.buyer,T=BT[bt0(v.type)].T;
   const cols=1+(o.hsn?1:0)+2+(o.gst?1:0)+1;
   return `<div class="inv" id="invprint">
-   <div class="ivh"><div><h2>${esc(s.name||"Your business")}</h2>${s.addr?`<p>${esc(s.addr).replace(/\n/g,"<br>")}</p>`:""}<p>${[s.phone?"📞 "+esc(s.phone):"",s.email?esc(s.email):""].filter(Boolean).join(" · ")}</p>${s.gstin?`<p><b>GSTIN:</b> ${esc(s.gstin)}</p>`:""}</div>
-   <div class="ivt"><h1>${T}</h1><p><b>No:</b> ${esc(v.no)}</p><p><b>Date:</b> ${esc(v.date)}</p>${o.due&&v.due?`<p><b>${v.type==="invoice"?"Due":"Valid till"}:</b> ${esc(v.due)}</p>`:""}${v.custom.filter(x=>x.l||x.v).map(x=>`<p><b>${esc(x.l)}:</b> ${esc(x.v)}</p>`).join("")}</div></div>
-   <div class="ivb"><b>${v.type==="invoice"?"Bill to":"Quotation for"}</b><p>${esc(b.name||"—")}</p>${b.addr?`<p>${esc(b.addr).replace(/\n/g,"<br>")}</p>`:""}${b.phone?`<p>📞 ${esc(b.phone)}</p>`:""}${b.gstin?`<p><b>GSTIN:</b> ${esc(b.gstin)}</p>`:""}</div>
+   <div class="ivh"><div>${safeData(s.logo)?`<img class="ivlogo" src="${s.logo}" alt="">`:""}<h2>${esc(s.name||"Your business")}</h2>${s.addr?`<p>${esc(s.addr).replace(/\n/g,"<br>")}</p>`:""}<p>${[s.phone?"📞 "+esc(s.phone):"",s.email?esc(s.email):""].filter(Boolean).join(" · ")}</p>${s.gstin?`<p><b>GSTIN:</b> ${esc(s.gstin)}</p>`:""}</div>
+   <div class="ivt"><h1>${T}</h1><p><b>No:</b> ${esc(v.no)}</p><p><b>Date:</b> ${esc(v.date)}</p>${o.due&&v.due?`<p><b>${BT[bt0(v.type)].due}:</b> ${esc(v.due)}</p>`:""}${v.custom.filter(x=>x.l||x.v).map(x=>`<p><b>${esc(x.l)}:</b> ${esc(x.v)}</p>`).join("")}</div></div>
+   <div class="ivb"><b>${BT[bt0(v.type)].bill}</b><p>${esc(b.name||"—")}</p>${b.addr?`<p>${esc(b.addr).replace(/\n/g,"<br>")}</p>`:""}${b.phone?`<p>📞 ${esc(b.phone)}</p>`:""}${b.gstin?`<p><b>GSTIN:</b> ${esc(b.gstin)}</p>`:""}</div>
    <table class="ivtb"><thead><tr><th>#</th><th>Description</th>${o.hsn?"<th>HSN/SAC</th>":""}<th>Qty</th><th>Rate</th>${o.gst?"<th>GST %</th>":""}<th>Amount</th></tr></thead><tbody>
    ${v.items.map((i,k)=>`<tr><td>${k+1}</td><td>${esc(i.d)}</td>${o.hsn?`<td>${esc(i.hsn)}</td>`:""}<td>${esc(i.q)}</td><td>${nn(i.r)}</td>${o.gst?`<td>${esc(i.g||0)}%</td>`:""}<td>${nn(c.rows[k].amt)}</td></tr>`).join("")}</tbody></table>
    <table class="ivsum"><tr><td>Subtotal</td><td>${nn(c.sub)}</td></tr>${o.disc&&c.disc?`<tr><td>Discount${v.disc.type==="pct"?" ("+esc(v.disc.v)+"%)":""}</td><td>− ${nn(c.disc)}</td></tr>`:""}
@@ -1033,10 +1109,11 @@ const OPTS=[["gst","GST"],["hsn","HSN / SAC code"],["disc","Discount"],["due","D
 function billForm(){
   const v=INV,o=v.opts,inp=(p,ph,t)=>`<input data-p="${p}" placeholder="${ph}" ${t?`type="${t}"`:""} value="${esc(p.split(".").reduce((a,k)=>a&&a[k],v))}">`;
   return `
-  <div class="seg"><a href="#" data-x="btype|invoice" class="${v.type==="invoice"?"on":""}">🧾 Invoice</a><a href="#" data-x="btype|quote" class="${v.type==="quote"?"on":""}">📄 Quotation</a></div>
+  <div class="seg">${["invoice","quote","order"].map(k=>`<a href="#" data-x="btype|${k}" class="${v.type===k?"on":""}">${BT[k].n}</a>`).join("")}</div>
   <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>Number</label>${inp("no","No.")}</div><div style="flex:1"><label>Date</label>${inp("date","","date")}</div></div>
-  ${o.due?`<label>${v.type==="invoice"?"Due date":"Valid till"}</label>${inp("due","","date")}`:""}
+  ${o.due?`<label>${BT[bt0(v.type)].due}</label>${inp("due","","date")}`:""}
   <h3 class="fh">From (your business)</h3>
+  <div class="row" style="flex-wrap:nowrap;align-items:center;margin-bottom:8px">${safeData(v.seller.logo)?`<img class="ivlogo" src="${v.seller.logo}" alt="">`:""}<label class="btn o s" for="lgf" style="margin:0">🖼 ${v.seller.logo?"Change logo":"Add logo (optional)"}</label><input id="lgf" type="file" accept="image/*" hidden>${v.seller.logo?`<button type="button" class="btn r s" data-x="rmlogo|x">Remove</button>`:""}</div>
   ${inp("seller.name","Business name")}<textarea data-p="seller.addr" rows="2" placeholder="Address" style="margin-top:8px">${esc(v.seller.addr)}</textarea>
   <div class="row" style="flex-wrap:nowrap;margin-top:8px"><div style="flex:1">${inp("seller.phone","Phone")}</div><div style="flex:1">${inp("seller.email","Email")}</div></div>
   <div style="margin-top:8px">${inp("seller.gstin","Your GST number (optional)")}</div>
@@ -1061,31 +1138,33 @@ function totalsHtml(){const c=calc(INV);return `<div class="row between"><span>S
 pages.bill=async(q,id)=>{
   const base="users/"+U.uid+"/inv";
   if(!id){
-    const l=rows(await fb.getDocs(col(base))).sort(lastOrder);
-    return `<h1>🧾 Invoice & Quotation</h1><p class="muted small" style="margin-top:0">Make a bill or quotation in a minute. GST is optional. Add or remove any field.</p>
-    <div class="row" style="margin:10px 0"><a class="btn g" href="#/bill/new?t=invoice">➕ New invoice</a><a class="btn o" href="#/bill/new?t=quote">➕ New quotation</a></div>
-    ${l.length?l.map(d=>`<a class="card tx" href="#/bill/${esc(d.id)}" style="color:var(--ink)"><div><b>${esc(d.buyer&&d.buyer.name||"—")}</b><p class="muted small" style="margin:0">${d.type==="invoice"?"Invoice":"Quotation"} ${esc(d.no)} · ${esc(d.date)}</p></div><div class="tr"><b>${money(calc(d).total)}</b></div></a>`).join(""):`<div class="empty"><b>No bills yet</b>Tap <b>New invoice</b> to start.</div>`}`;
+    const k=bt0(q.get("t")||"invoice"),B=BT[k];
+    const l=rows(await fb.getDocs(col(base))).filter(d=>bt0(d.type)===k).sort(lastOrder);
+    return `<h1>🧾 Bills</h1><p class="muted small" style="margin:0 0 8px">Invoice, quotation and sales order. GST is optional. Add or remove any field.</p>
+    <div class="seg">${Object.keys(BT).map(x=>`<a href="#/bill?t=${x}" class="${x===k?"on":""}">${BT[x].pl}</a>`).join("")}</div>
+    <div class="row" style="margin:10px 0"><a class="btn g" href="#/bill/new?t=${k}">➕ New ${B.n.toLowerCase()}</a></div>
+    ${l.length?l.map(d=>`<a class="card tx" href="#/bill/${esc(d.id)}" style="color:var(--ink)"><div><b>${esc(d.buyer&&d.buyer.name||"—")}</b><p class="muted small" style="margin:0">${B.n} ${esc(d.no)} · ${esc(d.date)}</p></div><div class="tr"><b>${money(calc(d).total)}</b></div></a>`).join(""):`<div class="empty"><b>No ${B.pl.toLowerCase()} yet</b>Tap <b>New ${B.n.toLowerCase()}</b> to start.</div>`}`;
   }
   let v;
   if(id==="new"){
-    const type=q.get("t")==="quote"?"quote":"invoice";
+    const type=bt0(q.get("t"));
     const all=rows(await fb.getDocs(col(base))).sort(lastOrder);
-    let seller=all[0]&&all[0].seller;
+    let seller=all[0]&&all[0].seller;let lg="";try{const g=await fb.getDoc(dref("users",U.uid,"fin","logo"));if(g.exists())lg=g.data().data||""}catch{}
     if(!seller){const b=await getBiz(U.uid);seller={name:b?b.name:"",addr:b?[b.area,b.city].filter(Boolean).join(", "):P.city||"",phone:b?b.phone:P.phone||"",email:P.email||"",gstin:b&&b.gst||""}}
     const n=all.filter(x=>x.type===type).length+1;
-    v=blankInv(type,{...seller},(type==="invoice"?"INV-":"QT-")+String(n).padStart(4,"0"));
+    v=blankInv(type,{...seller,logo:lg||(seller&&seller.logo)||""},BT[type].p+String(n).padStart(4,"0"));
   }else{
     const d=await fb.getDoc(dref("users",U.uid,"inv",id));
     if(!d.exists())return `<div class="empty"><b>Not found</b><a class="btn" href="#/bill">Back</a></div>`;
     v={...blankInv("invoice",{}),...d.data(),id};
   }
   INV=v;
-  return `<p style="margin:12px 0"><a href="#/bill"><b>← Back</b></a></p><h1>${v.type==="invoice"?"Invoice":"Quotation"}</h1>
+  return `<p style="margin:12px 0"><a href="#/bill?t=${bt0(v.type)}"><b>← Back</b></a></p><h1>${BT[bt0(v.type)].n}</h1>
   <div class="card pad" id="bf">${billForm()}</div>
   <div class="card pad" id="bt" style="margin-top:12px">${totalsHtml()}</div>
   <p class="err" id="be"></p>
   <div class="row" style="margin:12px 0"><button class="btn g" data-x="bsave|x">💾 Save</button><button class="btn" data-x="bprev|x">👁 Preview / Print</button></div>
-  <div class="row">${v.id&&v.type==="quote"?`<button class="btn o s" data-x="toinv|x">Make invoice from this</button>`:""}${v.id?`<button class="btn r s" data-x="delbill|x">Delete</button>`:""}</div>`;
+  <div class="row">${v.id&&v.type!=="invoice"?`<button class="btn o s" data-x="toinv|x">Make invoice from this</button>`:""}${v.id?`<button class="btn r s" data-x="delbill|x">Delete</button>`:""}</div>`;
 };
 BIND.bill=()=>{
   const bf=$("#bf");if(!bf||!INV)return;
@@ -1098,14 +1177,16 @@ BIND.bill=()=>{
     else return;
     upd();
   });
-  bf.addEventListener("change",e=>{
+  bf.addEventListener("change",async e=>{
     const t=e.target;
+    if(t.id==="lgf"){const f=t.files[0];t.value="";if(!f)return;try{const d=await imgData(f,260,.8);INV.seller.logo=d;try{await fb.setDoc(dref("users",U.uid,"fin","logo"),{data:d})}catch{}redraw()}catch{toast("Could not read this picture.")}return}
     if(t.dataset.o){INV.opts[t.dataset.o]=t.checked;redraw()}
     else if(t.dataset.p==="opts.intra"||t.dataset.p==="disc.type"){upd()}
   });
 };
 function redraw(){const bf=$("#bf"),y=window.scrollY;if(bf){bf.innerHTML=billForm();window.scrollTo(0,y)}const t=$("#bt");if(t)t.innerHTML=totalsHtml()}
-XH.btype=t=>{INV.type=t;INV.no=(t==="invoice"?"INV-":"QT-")+(INV.no.replace(/^\D+/,"")||"0001");const h=$("h1");if(h)h.textContent=t==="invoice"?"Invoice":"Quotation";redraw()};
+XH.btype=t=>{t=bt0(t);INV.type=t;INV.no=BT[t].p+(INV.no.replace(/^\D+/,"")||"0001");const h=$("h1");if(h)h.textContent=BT[t].n;redraw()};
+XH.rmlogo=async()=>{INV.seller.logo="";try{await fb.deleteDoc(dref("users",U.uid,"fin","logo"))}catch{}redraw()};
 XH.additem=()=>{INV.items.push({d:"",hsn:"",q:1,r:"",g:INV.items.length?INV.items[INV.items.length-1].g:18});redraw()};
 XH.delitem=k=>{if(INV.items.length<2){INV.items[0]={d:"",hsn:"",q:1,r:"",g:18}}else INV.items.splice(+k,1);redraw()};
 XH.addcf=()=>{INV.custom.push({l:"",v:""});redraw()};
@@ -1125,11 +1206,11 @@ XH.bsave=async()=>{
 };
 XH.bprev=()=>{
   const c=calc(INV);
-  const m=modal(`<div class="noprint"><h2>Preview</h2></div>${invHtml(INV)}<div class="row noprint" style="margin-top:12px"><button class="btn g" id="bp">🖨 Print / Save as PDF</button><a class="btn o" target="_blank" rel="noopener" href="${waTo(String(INV.buyer.phone||"").replace(/\D/g,"").slice(-10),(INV.type==="invoice"?"Invoice ":"Quotation ")+INV.no+" from "+(INV.seller.name||"us")+"\nTotal: ₹"+nn(c.total)+"\nThank you!")}">📤 Share on WhatsApp</a></div>`);
+  const m=modal(`<div class="noprint"><h2>Preview</h2></div>${invHtml(INV)}<div class="row noprint" style="margin-top:12px"><button class="btn g" id="bp">🖨 Print / Save as PDF</button><a class="btn o" target="_blank" rel="noopener" href="${waTo(String(INV.buyer.phone||"").replace(/\D/g,"").slice(-10),BT[bt0(INV.type)].n+" "+INV.no+" from "+(INV.seller.name||"us")+"\nTotal: ₹"+nn(c.total)+"\nThank you!")}">📤 Share on WhatsApp</a></div>`);
   $("#bp",m).onclick=()=>window.print();
 };
 XH.toinv=()=>{INV.type="invoice";delete INV.id;INV.no="INV-"+(INV.no.replace(/^\D+/,"")||"0001");toast("Now save it as a new invoice");const h=$("h1");if(h)h.textContent="Invoice";redraw()};
-XH.delbill=async()=>{if(!confirm("Delete this document?"))return;try{await fb.deleteDoc(dref("users",U.uid,"inv",INV.id));toast("Deleted");location.hash="#/bill"}catch(x){toast(friendly(x))}};
+XH.delbill=async()=>{if(!confirm("Delete this document?"))return;try{await fb.deleteDoc(dref("users",U.uid,"inv",INV.id));toast("Deleted");location.hash="#/bill?t="+bt0(INV.type)}catch(x){toast(friendly(x))}};
 
 
 pages.qr=async()=>{
@@ -1169,7 +1250,7 @@ pages.services=async(q)=>{
   const hit=x=>(!f.cat||x.b.cat===f.cat)&&(!f.q||(x.n+" "+x.b.name+" "+x.b.cat+" "+(x.b.tags||"")).toLowerCase().includes(f.q));
   const res=all.filter(hit);
   const link=c=>"#/services"+(c?"?cat="+encodeURIComponent(c):"");
-  return `<h1>Services</h1><p class="muted small" style="margin-top:0">Book a service from local businesses.</p>
+  return `<h1>Services</h1>${segSvc("s")}<p class="muted small" style="margin-top:0">Book a service from local businesses.</p>
   <form id="sf" class="hsearch" style="margin-top:8px"><span>🔍</span><input name="q" type="search" value="${esc(q.get("q")||"")}" placeholder="Search a service"><button class="btn g s">Search</button></form>
   ${cats.length?`<div class="chips"><a class="${f.cat?"":"on"}" href="${link("")}">All</a>${cats.map(c=>`<a class="${f.cat===c?"on":""}" href="${link(c)}">${CATS[c]||"🏪"} ${esc(catName(c))}</a>`).join("")}</div>`:""}
   ${res.length?res.map(x=>`<div class="card sv"><div class="svh"><div><h3>${esc(x.n)}</h3><p class="muted small" style="margin:2px 0">${esc(x.b.name)} · ${esc(x.b.area)}, ${esc(x.b.city)}</p></div>${x.p?`<b class="svp">${esc(x.p)}</b>`:""}</div>
@@ -1249,7 +1330,8 @@ pages.help=async()=>`<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a>
 
 pages.admin=async()=>{
   if(!ADMIN)return `<div class="empty"><b>🔒 Admin only</b></div>`;
-  const [bs,rs,js,as,cs]=await Promise.all([fb.getDocs(col("businesses")),fb.getDocs(col("reports")),fb.getDocs(col("jobs")),fb.getDocs(col("articles")),fb.getDocs(col("chats"))]);
+  const [bs,rs,js,as,cs,rfs]=await Promise.all([fb.getDocs(col("businesses")),fb.getDocs(col("reports")),fb.getDocs(col("jobs")),fb.getDocs(col("articles")),fb.getDocs(col("chats")),fb.getDocs(col("referrals"))]);
+  const allrefs=rows(rfs).sort(lastOrder).slice(0,40);
   const all=rows(bs).sort(lastOrder),reps=rows(rs).sort(lastOrder),jobs=rows(js).sort(lastOrder),arts=rows(as).sort(lastOrder),unread=rows(cs).filter(c=>c.unreadAdmin).length;
   const pend=all.filter(b=>b.status==="pending"),rest=all.filter(b=>b.status!=="pending"),pj=jobs.filter(j=>j.status==="pending"),pa=arts.filter(a=>a.status==="pending");
   const row=b=>`<div class="card rc"><div class="row between"><h3>${esc(b.name)}</h3><span class="chip ${b.status==="approved"?"g":"w"}">${esc(b.status)}</span></div><p class="muted small" style="margin:2px 0">${esc(b.cat)} · ${esc(b.city)} · ${esc(b.owner)} · ${esc(b.phone)}</p>
@@ -1260,11 +1342,12 @@ pages.admin=async()=>{
     <div class="row" style="margin-top:8px">${a.status!=="approved"?`<button class="btn g s" data-ad="okart|${esc(a.id)}">Approve</button>`:""}<a class="btn o s" href="#/article/${esc(a.id)}">Open</a><button class="btn r s" data-ad="delart|${esc(a.id)}">Remove</button></div></div>`;
   return `<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a></p><h1>Admin</h1>
   <div class="stat"><div><b>${all.length}</b><span>Businesses</span></div><div><b>${pend.length+pj.length+pa.length}</b><span>Waiting</span></div><div><b>${reps.length}</b><span>Reports</span></div></div>
-  <div class="row" style="margin:12px 0"><button class="btn g" data-ad="add|x">➕ Add a business</button><button class="btn o" data-ad="bulk|x">📥 Add many</button><button class="btn o" data-ad="art|x">✍️ Write article</button><a class="btn o" href="#/chats">💬 Chats${unread?" ("+unread+")":""}</a></div>
+  <div class="row" style="margin:12px 0"><button class="btn g" data-ad="add|x">➕ Add a business</button><button class="btn o" data-ad="bulk|x">📥 Add many</button><button class="btn o" data-ad="art|x">✍️ Write article</button><a class="btn o" href="#/chats">💬 Chats${unread?" ("+unread+")":""}</a><button class="btn o" data-ad="dups|x">🔢 Fix duplicate numbers</button></div>
   <div class="head"><h2>⏳ Businesses waiting</h2></div>${pend.length?pend.map(row).join(""):`<p class="muted">Nothing waiting.</p>`}
   <div class="head"><h2>💼 Jobs waiting</h2></div>${pj.length?pj.map(jrow).join(""):`<p class="muted">Nothing waiting.</p>`}
   <div class="head"><h2>📝 Articles waiting</h2></div>${pa.length?pa.map(arow).join(""):`<p class="muted">Nothing waiting.</p>`}
-  <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><div class="row"><a class="btn o s" href="#/biz/${esc(r.bizId)}">Open</a><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div></div>`).join(""):`<p class="muted">No reports.</p>`}
+  <div class="head"><h2>🚩 Reports</h2></div>${reps.length?reps.map(r=>`<div class="card rc"><b>${esc(r.name)}</b><p class="muted small" style="margin:2px 0">${esc(r.why)}</p><div class="row"><a class="btn o s" href="${r.postId?"#/post/"+esc(r.postId):"#/biz/"+esc(r.bizId)}">Open</a><button class="btn o s" data-ad="rep|${esc(r.id)}">Done</button></div></div>`).join(""):`<p class="muted">No reports.</p>`}
+  <div class="head"><h2>📋 Referrals (latest 40)</h2></div><p class="muted small" style="margin-top:0">For shops you added yourself, you update Bought / Paid here.</p>${allrefs.length?allrefs.map(r=>refItem(r,"shop")).join(""):`<p class="muted">None yet.</p>`}
   <div class="head"><h2>All businesses</h2></div>${rest.length?rest.map(row).join(""):`<p class="muted">None yet.</p>`}
   <div class="head"><h2>Live jobs</h2></div>${jobs.filter(j=>j.status==="approved").map(jrow).join("")||`<p class="muted">None yet.</p>`}
   <div class="head"><h2>Live articles</h2></div>${arts.filter(a=>a.status==="approved").map(arow).join("")||`<p class="muted">None yet.</p>`}`;
@@ -1316,12 +1399,13 @@ function bindSetup(){
 const app=$("#app");
 const GATED=new Set(["shop","edit","refs","me","saved","admin","money","bill","chat","chats"]);
 let tok=0;
+const PUB=new Set(["home","list","services","jobs","articles","qa"]);
 async function route(keep){
-  if(!READY){app.innerHTML=spin();return}
+  if(!READY){if(!app.innerHTML.trim())app.innerHTML=spin();return}
   const my=++tok;stopChat();document.querySelectorAll(".mw").forEach(x=>x.remove());
   const parts=location.hash.replace(/^#\/?/,"").split("?"),segs=parts[0].split("/").filter(Boolean);
   const name=segs[0]||"home",id=segs[1],q=new URLSearchParams(parts[1]||"");
-  const t=({home:"home",list:"home",biz:"home",jobs:"home",articles:"home",article:"home",services:"services",money:"money",bill:"bill"})[name]||"me";
+  const t=({home:"home",list:"home",biz:"home",jobs:"home",articles:"home",article:"home",services:"services",feed:"services",post:"services",qa:"services",q:"services",money:"money",bill:"bill"})[name]||"me";
   $$("nav a").forEach(a=>a.classList.toggle("on",a.dataset.t===t));
 
   $("#lg").hidden=!!U;
@@ -1333,8 +1417,14 @@ async function route(keep){
   if(U&&!P){show(setupPage());bindSetup();return}
   if(GATED.has(name)&&!U){show(loginPage("Please login to use this. It only takes a minute."));bindLogin();return}
   if(!pages[name]){show(`<div class="empty"><b>Page not found</b><a class="btn" href="#/">Go home</a></div>`);return}
-  if(!keep)app.innerHTML=spin();
-  try{const html=await pages[name](q,id);if(show(html))bind(name)}
+  const PK="bc_pc2:"+(location.hash||"#/"),cacheable=PUB.has(name)&&!keep;
+  let cached=null;if(cacheable)try{cached=localStorage.getItem(PK)}catch{}
+  if(cached){app.innerHTML=cached;window.scrollTo(0,0);bind(name)}else if(!keep)app.innerHTML=spin();
+  try{const html=await pages[name](q,id);
+    if(cacheable)try{if(html.length<900000)localStorage.setItem(PK,html);else localStorage.removeItem(PK)}catch{try{Object.keys(localStorage).filter(k=>k.startsWith("bc_pc2:")).forEach(k=>localStorage.removeItem(k))}catch{}}
+    if(cached&&html===cached)return;
+    if(cached){if(my===tok){const y=window.scrollY;app.innerHTML=html;window.scrollTo(0,y);bind(name)}}
+    else if(show(html))bind(name)}
   catch(e){console.error(e);show(`<div class="empty"><b>⚠️ Could not load</b><p class="muted small">${esc(friendly(e))}</p><button class="btn" id="retry">Try again</button></div>`);const r=$("#retry");if(r)r.onclick=()=>route()}
 }
 window.addEventListener("hashchange",()=>route());
@@ -1365,7 +1455,7 @@ function bind(name){
   const lo=$("#logout");if(lo)lo.onclick=async()=>{await fb.signOut(auth);toast("Logged out");location.hash="#/"};
   const ci=$("#copyid");if(ci)ci.onclick=e=>{e.preventDefault();(navigator.clipboard?navigator.clipboard.writeText(U.uid):Promise.reject()).then(()=>toast("ID copied"),()=>prompt("Copy your ID",U.uid))};
   const hd=$("#hide");if(hd)hd.onclick=async()=>{try{const b=await getBiz(U.uid);await fb.updateDoc(dref("businesses",U.uid),{status:b.status==="hidden"?"approved":"hidden"});bust();toast("Done");route(true)}catch(e){toast(friendly(e))}};
-  const dl=$("#del");if(dl)dl.onclick=async()=>{if(!confirm("Delete your business?"))return;try{await fb.deleteDoc(dref("businesses",U.uid));bust();toast("Deleted");location.hash="#/shop"}catch(e){toast(friendly(e))}};
+  const dl=$("#del");if(dl)dl.onclick=async()=>{if(!confirm("Delete your business?"))return;try{const ob=await getBiz(U.uid);await fb.deleteDoc(dref("businesses",U.uid));if(ob)await freePhone(ob.phone,U.uid);bust();toast("Deleted");location.hash="#/shop"}catch(e){toast(friendly(e))}};
 }
 
 // ============ buttons ============
@@ -1388,7 +1478,7 @@ document.addEventListener("click",async e=>{
     return;
   }
   const r=e.target.closest("[data-refer]");
-  if(r){if(!U)return needLogin("Please login to refer a customer");const b=await getBiz(r.dataset.refer);if(b)referral(b);return}
+  if(r){if(!U)return needLogin("Please login to refer a customer");const b=await getBiz(r.dataset.refer);if(b&&noCm(b))return toast("This business does not give commission.");if(b)referral(b);return}
   const st=e.target.closest("[data-st]");
   if(st){const [id,v]=st.dataset.st.split("|");st.disabled=true;try{await fb.updateDoc(dref("referrals",id),{status:v,t2:Date.now()});toast("Updated");route(true)}catch(x){toast(friendly(x));st.disabled=false}return}
   const rp=e.target.closest("[data-report]");
@@ -1399,6 +1489,7 @@ document.addEventListener("click",async e=>{
     if(a==="add")return adminAdd();
     if(a==="bulk")return adminBulk();
     if(a==="art")return articleModal();
+    if(a==="dups")return fixDups();
     try{
       if(a==="okjob"){await fb.updateDoc(dref("jobs",id),{status:"approved"});toast("Job is live");return route(true)}
       if(a==="deljob"){if(!confirm("Remove this job?"))return;await fb.deleteDoc(dref("jobs",id));toast("Done");return route(true)}
@@ -1410,18 +1501,34 @@ document.addEventListener("click",async e=>{
       if(a==="rep")await fb.deleteDoc(dref("reports",id));
       if(a==="ok")await fb.updateDoc(dref("businesses",id),{status:"approved"});
       if(a==="star"){const b=await getBiz(id);await fb.updateDoc(dref("businesses",id),{featured:!b.featured})}
-      if(a==="del"){if(!confirm("Remove this business?"))return;await fb.deleteDoc(dref("businesses",id))}
+      if(a==="del"){if(!confirm("Remove this business?"))return;const ob=await getBiz(id);await fb.deleteDoc(dref("businesses",id));if(ob)await freePhone(ob.phone,id)}
       bust();toast("Done");route(true);
     }catch(x){toast(friendly(x))}
   }
 });
 
+async function fixDups(){
+  const btn=document.querySelector('[data-ad="dups|x"]');if(btn)btn.disabled=true;
+  try{
+    const all=rows(await fb.getDocs(col("businesses"))),g={};
+    all.forEach(b=>{const p=cleanPhone(b.phone);if(p)(g[p]=g[p]||[]).push(b)});
+    const del=[],keep=[];
+    Object.entries(g).forEach(([p,a])=>{a.sort((x,y)=>(y.ownerUid?1:0)-(x.ownerUid?1:0)||(x.t||0)-(y.t||0));keep.push([p,a[0]]);a.slice(1).forEach(b=>del.push(b))});
+    if(del.length&&!confirm(del.length+" extra businesses use a number that is already used. Remove these extra ones?\n\n"+del.slice(0,8).map(b=>b.name+" ("+b.phone+")").join("\n")+(del.length>8?"\n…":"")))return;
+    const ops=[];
+    del.forEach(b=>ops.push(w=>w.delete(dref("businesses",b.id))));
+    keep.forEach(([p,b])=>{ops.push(w=>w.set(dref("phones",p),{bizId:b.id,t:Date.now()}));if(b.phone!==p)ops.push(w=>w.update(dref("businesses",b.id),{phone:p}))});
+    for(let i=0;i<ops.length;i+=400){const w=fb.writeBatch(db);ops.slice(i,i+400).forEach(f=>f(w));await w.commit()}
+    bust();toast(del.length?del.length+" duplicates removed":"No duplicates. Numbers are saved.");route(true);
+  }catch(x){toast(friendly(x))}finally{if(btn)btn.disabled=false}
+}
+document.addEventListener("click",e=>{const c=e.target.closest("[data-go]");if(c&&!e.target.closest("a,button,input,select,textarea,label"))location.hash="#/biz/"+c.dataset.go});
 function adminBulk(){
   const cats=Object.keys(CATS);
   const m=modal(`<h2>Add many businesses</h2>
    <p class="muted small">One business per line. Separate with commas:<br><b>name, category, owner, mobile, city, area, commission</b></p>
    <p class="small" style="background:var(--soft);padding:8px;border-radius:10px">Example:<br>Sharma Sweets, Grocery, Raj Sharma, 9876543210, Pune, Pimpri, 10%<br>City Mobiles, Mobile Phones, Amit, 9123456780, Pune, Akurdi, 300<br>Raj Tutors, Education, Raj, 9012345678, Pune, Nigdi, talk</p>
-   <p class="muted small">Commission: <b>10%</b> = percent, <b>300</b> = fixed ₹, <b>talk</b> = talk to owner. Wrong category becomes "Other Services".</p>
+   <p class="muted small">Commission: <b>10%</b> = percent, <b>300</b> = fixed ₹, <b>talk</b> = talk to owner, <b>none</b> = no commission. Wrong category becomes "Other Services".</p>
    <textarea id="bt" rows="8" placeholder="Paste your lines here"></textarea>
    <p class="err" id="be"></p><button class="btn g big" id="bg">Add all</button>`);
   $("#bg",m).onclick=async()=>{
@@ -1429,10 +1536,10 @@ function adminBulk(){
     lines.forEach((ln,i)=>{
       const p=ln.split(",").map(x=>x.trim());
       if(p.length<7){bad.push(i+1);return}
-      const [name,cat,owner,phone,city,area,com]=p,ph=phone.replace(/\D/g,"").slice(-10);
-      let ct="talk",cv=0;
+      const [name,cat,owner,phone,city,area,com]=p,ph=cleanPhone(phone);
+      let ct="talk",cv=0;if(/^(none|off|no)$/i.test(com))ct="none";else
       if(/%$/.test(com)){ct="percent";cv=parseFloat(com)}else if(/^\d+(\.\d+)?$/.test(com)){ct="fixed";cv=parseFloat(com)}
-      if(!name||!owner||!city||!area||!/^[6-9]\d{9}$/.test(ph)||(ct!=="talk"&&!(cv>0))||(ct==="percent"&&cv>100)){bad.push(i+1);return}
+      if(!name||!owner||!city||!area||!/^[6-9]\d{9}$/.test(ph)||(ct!=="talk"&&ct!=="none"&&!(cv>0))||(ct==="percent"&&cv>100)){bad.push(i+1);return}
       const c=cats.find(k=>k.toLowerCase()===cat.toLowerCase())||"Other Services";
       out.push({name:name.slice(0,70),cat:c,owner:owner.slice(0,60),phone:ph,city:city.slice(0,40),area:area.slice(0,50),ct,cv,note:"",desc:"",img:"",ownerUid:"",status:"approved",featured:false,addedBy:U.uid,t:Date.now()});
     });
@@ -1441,10 +1548,10 @@ function adminBulk(){
     if(out.length>200)return er.textContent="Please add up to 200 at a time.";
     const btn=$("#bg",m);btn.disabled=true;btn.textContent="Adding…";
     try{
-      const have=new Set(rows(await fb.getDocs(col("businesses"))).map(x=>x.phone+"|"+String(x.name).toLowerCase()));
-      const fresh=out.filter(d=>{const k=d.phone+"|"+d.name.toLowerCase();if(have.has(k))return false;have.add(k);return true});
-      if(fresh.length){const b=fb.writeBatch(db);fresh.forEach(d=>b.set(fb.doc(col("businesses")),d));await b.commit()}
-      bust();m.close();toast(fresh.length+" added"+(out.length>fresh.length?", "+(out.length-fresh.length)+" skipped (already there)":""));route(true);
+      const have=new Set(rows(await fb.getDocs(col("businesses"))).map(x=>cleanPhone(x.phone)));try{rows(await fb.getDocs(col("phones"))).forEach(x=>have.add(x.id))}catch(e){console.warn(e)}
+      const fresh=out.filter(d=>{const k=d.phone;if(have.has(k))return false;have.add(k);return true});
+      if(fresh.length){const b=fb.writeBatch(db);fresh.forEach(d=>{const r=fb.doc(col("businesses"));b.set(r,d);b.set(dref("phones",d.phone),{bizId:r.id,t:Date.now()})});await b.commit()}
+      bust();m.close();toast(fresh.length+" added"+(out.length>fresh.length?", "+(out.length-fresh.length)+" skipped (number already used)":""));route(true);
     }catch(x){er.textContent=friendly(x);btn.disabled=false;btn.textContent="Add all"}
   };
 }
@@ -1474,6 +1581,122 @@ function referral(b){
   };
 }
 
+// ---- Feed (photos) and Q&A ----
+const agoT=t=>{const s=Math.max(1,Math.round((Date.now()-(t||0))/1000));if(s<60)return"just now";const m=Math.round(s/60);if(m<60)return m+" min ago";const h=Math.round(m/60);if(h<24)return h+" hr ago";const d=Math.round(h/24);return d<30?d+" day"+(d>1?"s":"")+" ago":fmtDate(t)};
+const segSvc=on=>`<div class="seg" style="margin-bottom:10px"><a href="#/services" class="${on==="s"?"on":""}">🛠️ Services</a><a href="#/feed" class="${on==="f"?"on":""}">📸 Feed</a><a href="#/qa" class="${on==="q"?"on":""}">❓ Q&amp;A</a></div>`;
+const initial=n=>esc(String(n||"?").trim().charAt(0).toUpperCase()||"?");
+function postHtml(p,my,full){
+  const liked=my.likes.has(p.id),saved=my.saved.has(p.id),own=U&&p.uid===U.uid;
+  return `<article class="card post" data-pid="${esc(p.id)}">
+   <div class="ph"><span class="av">${initial(p.name)}</span><div><b>${p.bizId?`<a href="#/biz/${esc(p.bizId)}">${esc(p.bizName||p.name)}</a>`:esc(p.name||"User")}</b><p class="muted small" style="margin:0">${agoT(p.t)}</p></div>${(own||ADMIN)?`<button class="ib" data-x="delpost|${esc(p.id)}" aria-label="Delete">🗑</button>`:""}</div>
+   ${p.img&&safeData(p.img)?`<img class="pimg" loading="lazy" src="${p.img}" alt="">`:""}
+   <div class="pact"><button class="lk ${liked?"on":""}" data-x="like|${esc(p.id)}" aria-label="Like"><span>${liked?"♥":"♡"}</span> <b>${p.likes||0}</b></button><a href="#/post/${esc(p.id)}" aria-label="Comments">💬 <b>${p.cmts||0}</b></a><button class="sp ${saved?"on":""}" data-x="savep|${esc(p.id)}" aria-label="Save">${saved?"🔖":"📑"}</button><button data-x="sharep|${esc(p.id)}" aria-label="Share">↗️</button></div>
+   ${p.text?`<p class="pt">${esc(p.text)}</p>`:""}
+   ${full?"":(p.cmts?`<a class="small muted" href="#/post/${esc(p.id)}">View all ${p.cmts} comments</a>`:"")}
+  </article>`;
+}
+async function myMarks(){
+  const my={likes:new Set(),saved:new Set()};
+  if(!U)return my;
+  try{rows(await fb.getDocs(fb.query(col("likes"),fb.where("uid","==",U.uid)))).forEach(x=>my.likes.add(x.postId))}catch(e){console.warn(e)}
+  try{rows(await fb.getDocs(col("users/"+U.uid+"/sp"))).forEach(x=>my.saved.add(x.id))}catch(e){console.warn(e)}
+  return my;
+}
+pages.feed=async()=>{
+  let l=[];try{l=rows(await fb.getDocs(fb.query(col("posts"),fb.orderBy("t","desc"),fb.limit(25))))}catch(e){console.warn(e)}
+  const my=await myMarks();
+  return `<h1>Services</h1>${segSvc("f")}
+  <button class="btn g" data-x="newpost|x">➕ Share a photo</button>
+  <div style="margin-top:12px">${l.length?l.map(p=>postHtml(p,my)).join(""):`<div class="empty"><b>📸 No posts yet</b>Be the first to share your work or a photo.</div>`}</div>`;
+};
+pages.post=async(q,id)=>{
+  const d=await fb.getDoc(dref("posts",id));
+  if(!d.exists())return `<div class="empty"><b>Post not found</b><a class="btn" href="#/feed">Back</a></div>`;
+  const p={id,...d.data()},my=await myMarks();
+  let cs=[];try{cs=rows(await fb.getDocs(fb.query(col("posts/"+id+"/cmts"),fb.orderBy("t"))))}catch(e){console.warn(e)}
+  return `<p style="margin:12px 0"><a href="#/feed"><b>← Feed</b></a></p>${postHtml(p,my,true)}
+  <div class="card pad" style="margin-top:12px"><h3>Comments (${cs.length})</h3>
+   ${cs.map(c=>`<div class="rv"><div class="row between"><b>${esc(c.name||"User")}</b><span class="muted small">${agoT(c.t)}${(ADMIN||(U&&c.uid===U.uid))?` · <a href="#" data-x="delcmt|${esc(id)}|${esc(c.id)}">Delete</a>`:""}</span></div><p style="margin:2px 0">${esc(c.text)}</p></div>`).join("")||`<p class="muted small">No comments yet.</p>`}
+   ${U?`<form id="cmf" class="row" style="flex-wrap:nowrap;margin-top:10px"><input name="t" maxlength="300" placeholder="Write a comment…" autocomplete="off"><button class="btn g s">Post</button></form>`:`<button class="btn g s" data-x="rvlogin|x" style="margin-top:10px">Login to comment</button>`}
+  </div>
+  ${U&&p.uid!==U.uid?`<p style="margin:10px 0"><a href="#" data-x="reportpost|${esc(id)}">🚩 Report this post</a></p>`:""}`;
+};
+BIND.post=()=>{
+  const f=$("#cmf");if(!f)return;const id=location.hash.split("?")[0].split("/")[2];
+  f.onsubmit=async e=>{e.preventDefault();const t=f.elements.t.value.trim();if(!t)return;f.querySelector("button").disabled=true;
+    try{const w=fb.writeBatch(db),r=fb.doc(col("posts/"+id+"/cmts"));w.set(r,{uid:U.uid,name:P.name,text:t,t:Date.now()});w.update(dref("posts",id),{cmts:fb.increment(1)});await w.commit();route(true)}
+    catch(x){toast(friendly(x));f.querySelector("button").disabled=false}};
+};
+XH.newpost=()=>{
+  if(!U)return needLogin("Please login to post");
+  let img="";
+  const m=modal(`<h2>Share a photo</h2><p class="muted small" style="margin-top:0">Share your work, a product, an offer or any useful photo. Please post only your own pictures.</p>
+   <label>Photo</label><input type="file" id="pf1" accept="image/*"><div id="pv"></div>
+   <label>Write something <small>(optional)</small></label><textarea id="pt1" rows="3" maxlength="400"></textarea>
+   <p class="err" id="pe1"></p><button class="btn g big" id="pg1">Post</button>`);
+  $("#pf1",m).onchange=async e=>{const f=e.target.files[0];if(!f)return;const r=await pickImages([f],1,1);if(r.length){img=r[0];$("#pv",m).innerHTML=`<img src="${img}" alt="" style="width:100%;border-radius:12px;margin-top:8px">`}};
+  $("#pg1",m).onclick=async()=>{
+    const text=$("#pt1",m).value.trim(),er=$("#pe1",m);
+    if(!img&&!text)return er.textContent="Please add a photo or write something.";
+    const b=await getBiz(U.uid),btn=$("#pg1",m);btn.disabled=true;
+    try{await fb.addDoc(col("posts"),{uid:U.uid,name:P.name,bizId:b&&b.status==="approved"?b.id:"",bizName:b&&b.status==="approved"?b.name:"",text,img,likes:0,cmts:0,t:Date.now()});m.close();toast("Posted");route(true)}
+    catch(x){er.textContent=friendly(x);btn.disabled=false}
+  };
+};
+XH.like=async id=>{
+  if(!U)return needLogin("Please login to like");
+  const btn=document.querySelector(`[data-pid="${id}"] .lk`);if(!btn||btn.disabled)return;btn.disabled=true;
+  const on=btn.classList.contains("on"),lr=dref("likes",id+"_"+U.uid),w=fb.writeBatch(db);
+  try{
+    if(on){w.delete(lr);w.update(dref("posts",id),{likes:fb.increment(-1)})}else{w.set(lr,{postId:id,uid:U.uid,t:Date.now()});w.update(dref("posts",id),{likes:fb.increment(1)})}
+    await w.commit();
+    const n=btn.querySelector("b");n.textContent=Math.max(0,(+n.textContent||0)+(on?-1:1));btn.classList.toggle("on",!on);btn.querySelector("span").textContent=on?"♡":"♥";
+  }catch(x){toast(friendly(x))}finally{btn.disabled=false}
+};
+XH.savep=async id=>{
+  if(!U)return needLogin("Please login to save");
+  const btn=document.querySelector(`[data-pid="${id}"] .sp`),on=btn.classList.contains("on"),r=dref("users",U.uid,"sp",id);
+  try{if(on)await fb.deleteDoc(r);else await fb.setDoc(r,{t:Date.now()});btn.classList.toggle("on",!on);btn.textContent=on?"📑":"🔖";toast(on?"Removed":"Saved")}catch(x){toast(friendly(x))}
+};
+XH.sharep=id=>share("Photo on BusinessConnect",shareUrl("/post/"+id));
+XH.delpost=async id=>{if(!confirm("Delete this post?"))return;try{await fb.deleteDoc(dref("posts",id));toast("Deleted");if(/#\/post\//.test(location.hash))location.hash="#/feed";else route(true)}catch(x){toast(friendly(x))}};
+XH.delcmt=async(a)=>{const [pid,cid]=String(a).split("|");if(!confirm("Delete this comment?"))return;try{const w=fb.writeBatch(db);w.delete(dref("posts",pid,"cmts",cid));w.update(dref("posts",pid),{cmts:fb.increment(-1)});await w.commit();route(true)}catch(x){toast(friendly(x))}};
+XH.reportpost=async id=>{const why=prompt("What is wrong with this post?");if(why&&why.trim()){try{await fb.addDoc(col("reports"),{postId:id,bizId:"",name:"Post",why:why.trim().slice(0,400),by:U.uid,t:Date.now()});toast("Thank you. The admin will check.")}catch(x){toast(friendly(x))}}};
+
+// ---- Q&A ----
+pages.qa=async()=>{
+  let l=[];try{l=rows(await fb.getDocs(fb.query(col("qs"),fb.orderBy("t","desc"),fb.limit(40))))}catch(e){console.warn(e)}
+  return `<h1>Services</h1>${segSvc("q")}
+  <button class="btn g" data-x="newq|x">❓ Ask a question</button>
+  <div style="margin-top:12px">${l.length?l.map(x=>`<a class="card pad qi" href="#/q/${esc(x.id)}" style="display:block;color:var(--ink);margin-bottom:10px"><b>${esc(x.q)}</b><p class="muted small" style="margin:4px 0 0">${esc(x.name||"User")} · ${agoT(x.t)} · 💬 ${x.ans||0} answer${(x.ans||0)===1?"":"s"}</p></a>`).join(""):`<div class="empty"><b>❓ No questions yet</b>Ask anything about services, shops or business. Others will answer.</div>`}</div>`;
+};
+pages.q=async(q,id)=>{
+  const d=await fb.getDoc(dref("qs",id));
+  if(!d.exists())return `<div class="empty"><b>Question not found</b><a class="btn" href="#/qa">Back</a></div>`;
+  const x={id,...d.data()};let as=[];try{as=rows(await fb.getDocs(fb.query(col("qs/"+id+"/ans"),fb.orderBy("t"))))}catch(e){console.warn(e)}
+  return `<p style="margin:12px 0"><a href="#/qa"><b>← Q&amp;A</b></a></p>
+  <div class="card pad"><h2 style="margin:0 0 4px">${esc(x.q)}</h2>${x.detail?`<p>${esc(x.detail)}</p>`:""}<p class="muted small" style="margin:0">${esc(x.name||"User")} · ${agoT(x.t)}${(ADMIN||(U&&x.uid===U.uid))?` · <a href="#" data-x="delq|${esc(id)}">Delete</a>`:""} · <a href="#" data-x="shareq|${esc(id)}">Share</a></p></div>
+  <div class="card pad" style="margin-top:12px"><h3>${as.length} answer${as.length===1?"":"s"}</h3>
+   ${as.map(a=>`<div class="rv"><div class="row between"><b>${esc(a.name||"User")}</b><span class="muted small">${agoT(a.t)}${(ADMIN||(U&&a.uid===U.uid))?` · <a href="#" data-x="delans|${esc(id)}|${esc(a.id)}">Delete</a>`:""}</span></div><p style="margin:2px 0;white-space:pre-wrap">${esc(a.text)}</p></div>`).join("")||`<p class="muted small">No answers yet. Be the first.</p>`}
+   ${U?`<form id="anf" style="margin-top:10px"><textarea name="t" rows="3" maxlength="800" placeholder="Write your answer…"></textarea><button class="btn g s" style="margin-top:8px">Post answer</button></form>`:`<button class="btn g s" data-x="rvlogin|x" style="margin-top:10px">Login to answer</button>`}
+  </div>`;
+};
+BIND.q=()=>{
+  const f=$("#anf");if(!f)return;const id=location.hash.split("?")[0].split("/")[2];
+  f.onsubmit=async e=>{e.preventDefault();const t=f.elements.t.value.trim();if(!t)return;f.querySelector("button").disabled=true;
+    try{const w=fb.writeBatch(db),r=fb.doc(col("qs/"+id+"/ans"));w.set(r,{uid:U.uid,name:P.name,text:t,t:Date.now()});w.update(dref("qs",id),{ans:fb.increment(1)});await w.commit();route(true)}
+    catch(x){toast(friendly(x));f.querySelector("button").disabled=false}};
+};
+XH.newq=()=>{
+  if(!U)return needLogin("Please login to ask");
+  const m=modal(`<h2>Ask a question</h2><label>Your question</label><input id="qq" maxlength="150" placeholder="Example: Which is the best AC repair shop in Kondhwa?"><label>More details <small>(optional)</small></label><textarea id="qd" rows="3" maxlength="500"></textarea><p class="err" id="qe"></p><button class="btn g big" id="qg">Post question</button>`);
+  $("#qg",m).onclick=async()=>{const q=$("#qq",m).value.trim(),er=$("#qe",m);if(q.length<8)return er.textContent="Please write your question.";const btn=$("#qg",m);btn.disabled=true;
+    try{const r=await fb.addDoc(col("qs"),{uid:U.uid,name:P.name,q,detail:$("#qd",m).value.trim(),ans:0,t:Date.now()});m.close();location.hash="#/q/"+r.id}catch(x){er.textContent=friendly(x);btn.disabled=false}};
+};
+XH.delq=async id=>{if(!confirm("Delete this question?"))return;try{await fb.deleteDoc(dref("qs",id));toast("Deleted");location.hash="#/qa"}catch(x){toast(friendly(x))}};
+XH.delans=async a=>{const [qid,aid]=String(a).split("|");if(!confirm("Delete this answer?"))return;try{const w=fb.writeBatch(db);w.delete(dref("qs",qid,"ans",aid));w.update(dref("qs",qid),{ans:fb.increment(-1)});await w.commit();route(true)}catch(x){toast(friendly(x))}};
+XH.shareq=id=>share("Question on BusinessConnect",shareUrl("/q/"+id));
+
 // ============ header buttons & theme ============
 $("#sb").onclick=()=>{$("#sp").classList.toggle("on");if($("#sp").classList.contains("on"))$("#sq").focus()};
 $("#sp").onsubmit=e=>{e.preventDefault();const v=$("#sq").value.trim();$("#sp").classList.remove("on");location.hash="#/list"+(v?"?q="+encodeURIComponent(v):"")};
@@ -1483,6 +1706,7 @@ setTheme(theme);
 $("#tb").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setItem("bc_theme",theme)}catch{}setTheme(theme)};
 
 // ============ start ============
+try{const c=localStorage.getItem("bc_pc2:"+(location.hash||"#/"));if(c&&!app.querySelector(".card"))app.innerHTML=c}catch{}
 (async()=>{
   try{
     const base=`https://www.gstatic.com/firebasejs/${FB_VERSION}/`;
@@ -1495,6 +1719,7 @@ $("#tb").onclick=()=>{theme=theme==="dark"?"light":"dark";try{localStorage.setIt
     return;
   }
   fb.onAuthStateChanged(auth,async user=>{
+    try{const nu=user?user.uid:"-";if(localStorage.getItem("bc_uid")!==nu){Object.keys(localStorage).filter(k=>k.startsWith("bc_pc2:")).forEach(k=>localStorage.removeItem(k));localStorage.setItem("bc_uid",nu)}}catch{}
     U=user;P=null;ADMIN=false;SAVED=new Set();
     if(user){
       try{const s=await fb.getDoc(dref("users",user.uid));P=s.exists()?s.data():null}catch(e){console.error(e)}
