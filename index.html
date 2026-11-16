@@ -274,6 +274,11 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
 .acc .ab{min-width:0;flex:1;word-break:break-word}.acc .ab b{font-size:1.05rem}.acc .ab p{margin:4px 0 0}
 .tx>div:first-child{min-width:0;word-break:break-word}.tr b{font-size:.95rem}
 .fab2{position:fixed;right:16px;bottom:calc(84px + env(safe-area-inset-bottom));width:56px;height:56px;border-radius:50%;border:0;background:var(--blue);color:#fff;font-size:2rem;line-height:1;box-shadow:0 4px 14px rgba(0,0,0,.28);z-index:57;cursor:pointer}
+.seg.sm{padding:3px;margin:8px 0;border-radius:12px}.seg.sm a{padding:7px 6px;font-size:.88rem;border-radius:9px}
+.composer{padding:6px 10px!important;gap:8px!important}.composer .cin{padding:7px 12px!important;font-size:.85rem!important}.composer .av{width:30px;height:30px;font-size:.85rem}.composer .askb{padding:6px 10px;font-size:.8rem}
+.bseg{display:flex;gap:8px;align-items:center;margin-top:6px}
+.mm{position:relative}.mmb{background:var(--soft);border:0;border-radius:12px;width:42px;height:38px;font-size:1.3rem;font-weight:800;color:var(--muted);cursor:pointer}.mmb.on{background:var(--blue);color:#fff}
+.mmenu{position:absolute;right:0;top:44px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:30;min-width:150px;overflow:hidden}.mmenu a{display:block;padding:12px 14px;font-weight:700;color:var(--ink)}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
@@ -1182,9 +1187,9 @@ pages.bill=async(q,id)=>{
   if(!id){
     const k=bt0(q.get("t")||"invoice"),B=BT[k];
     const l=rows(await fb.getDocs(col(base))).filter(d=>bt0(d.type)===k).sort(lastOrder);
-    return `<h1>🧾 Bills</h1><p class="muted small" style="margin:0 0 8px">Invoice, quotation and sales order. GST is optional. Add or remove any field.</p>
-    <div class="seg">${Object.keys(BT).map(x=>`<a href="#/bill?t=${x}" class="${x===k?"on":""}">${BT[x].pl}</a>`).join("")}</div>
-    <div class="row" style="margin:10px 0"><a class="btn g" href="#/bill/new?t=${k}">➕ New ${B.n.toLowerCase()}</a></div>
+    return `<div class="bseg"><div class="seg sm" style="flex:1;margin:0"><a href="#/bill?t=invoice" class="${k==="invoice"?"on":""}">Invoices</a><a href="#/bill?t=quote" class="${k==="quote"?"on":""}">Quotations</a></div>
+    <div class="mm"><button class="mmb ${k==="order"?"on":""}" data-x="bmore|x" aria-label="More">⋯</button><div class="mmenu" hidden><a href="#/bill?t=order">Sales orders</a></div></div></div>
+    <div class="row" style="margin:10px 0"><a class="btn g s" href="#/bill/new?t=${k}">➕ New ${B.n.toLowerCase()}</a>${k==="order"?`<span class="muted small">Sales orders</span>`:""}</div>
     ${l.length?l.map(d=>`<a class="card tx" href="#/bill/${esc(d.id)}" style="color:var(--ink)"><div><b>${esc(d.buyer&&d.buyer.name||"—")}</b><p class="muted small" style="margin:0">${B.n} ${esc(d.no)} · ${esc(d.date)}</p></div><div class="tr"><b>${money(calc(d).total)}</b></div></a>`).join(""):`<div class="empty"><b>No ${B.pl.toLowerCase()} yet</b>Tap <b>New ${B.n.toLowerCase()}</b> to start.</div>`}`;
   }
   let v;
@@ -1227,6 +1232,7 @@ BIND.bill=()=>{
   });
 };
 function redraw(){const bf=$("#bf"),y=window.scrollY;if(bf){bf.innerHTML=billForm();window.scrollTo(0,y)}const t=$("#bt");if(t)t.innerHTML=totalsHtml()}
+XH.bmore=()=>{const m=document.querySelector(".mmenu");if(m)m.hidden=!m.hidden};
 XH.btype=t=>{t=bt0(t);INV.type=t;INV.no=BT[t].p+(INV.no.replace(/^\D+/,"")||"0001");const h=$("h1");if(h)h.textContent=BT[t].n;redraw()};
 XH.rmlogo=async()=>{INV.seller.logo="";try{await fb.deleteDoc(dref("users",U.uid,"fin","logo"))}catch{}redraw()};
 XH.additem=()=>{INV.items.push({d:"",hsn:"",q:1,r:"",g:INV.items.length?INV.items[INV.items.length-1].g:18});redraw()};
@@ -1626,7 +1632,7 @@ function referral(b){
 
 // ---- Feed (photos) and Q&A ----
 const agoT=t=>{const s=Math.max(1,Math.round((Date.now()-(t||0))/1000));if(s<60)return"just now";const m=Math.round(s/60);if(m<60)return m+" min ago";const h=Math.round(m/60);if(h<24)return h+" hr ago";const d=Math.round(h/24);return d<30?d+" day"+(d>1?"s":"")+" ago":fmtDate(t)};
-const segSvc=on=>`<div class="seg" style="margin-bottom:10px"><a href="#/feed" class="${on==="f"?"on":""}">📸 Photos</a><a href="#/qa" class="${on==="q"?"on":""}">❓ Questions</a></div>`;
+const segSvc=on=>`<div class="seg sm"><a href="#/feed" class="${on==="f"?"on":""}">Feed</a><a href="#/qa" class="${on==="q"?"on":""}">Questions</a></div>`;
 const initial=n=>esc(String(n||"?").trim().charAt(0).toUpperCase()||"?");
 function postHtml(p,my,full){
   const liked=my.likes.has(p.id),saved=my.saved.has(p.id),own=U&&p.uid===U.uid;
@@ -1645,17 +1651,32 @@ async function myMarks(){
   try{rows(await fb.getDocs(col("users/"+U.uid+"/sp"))).forEach(x=>my.saved.add(x.id))}catch(e){console.warn(e)}
   return my;
 }
+let FEED=null;
+const feedBiz=(b,im,n,tot)=>`<article class="card post"><div class="ph"><span class="av">${initial(b.name)}</span><div><b><a href="#/biz/${esc(b.id)}">${esc(b.name)}</a></b><p class="muted small" style="margin:0">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · ${esc(b.area)}, ${esc(b.city)}</p></div></div>
+    <a href="#/biz/${esc(b.id)}"><img class="pimg" loading="lazy" src="${esc(im)}" alt=""></a>
+    <div class="pact"><a class="btn g s" href="#/biz/${esc(b.id)}" style="font-size:.85rem">View business</a><button data-x="share|${esc(b.id)}" aria-label="Share">↗️</button>${tot>1?`<span class="muted small" style="margin-left:auto">${n}/${tot}</span>`:""}</div></article>`;
+const feedMore=()=>{
+  if(!FEED)return;const box=$("#fl"),btn=$("#fm");if(!box)return;
+  const n=Math.min(FEED.shown+12,FEED.items.length);
+  box.insertAdjacentHTML("beforeend",FEED.items.slice(FEED.shown,n).map(i=>i.kind==="p"?postHtml(i.p,FEED.my):feedBiz(i.b,i.im,i.n,i.tot)).join(""));
+  FEED.shown=n;if(btn)btn.hidden=n>=FEED.items.length;
+};
+XH.feedmore=()=>feedMore();
 pages.feed=async()=>{
-  let ps=[];try{ps=rows(await fb.getDocs(fb.query(col("posts"),fb.orderBy("t","desc"),fb.limit(25))))}catch(e){console.warn(e)}
+  let ps=[];try{ps=rows(await fb.getDocs(fb.query(col("posts"),fb.orderBy("t","desc"),fb.limit(300))))}catch(e){console.warn(e)}
   const [my,bl]=await Promise.all([myMarks(),approved().catch(()=>[])]);
-  const bp=bl.filter(b=>(b.imgs&&b.imgs[0])||b.img).map(b=>({kind:"b",b,t:b.t||0}));
-  const items=[...ps.map(p=>({kind:"p",p,t:p.t||0})),...bp].sort((a,b)=>b.t-a.t).slice(0,30);
-  const bhtml=b=>`<article class="card post"><div class="ph"><span class="av">${initial(b.name)}</span><div><b><a href="#/biz/${esc(b.id)}">${esc(b.name)}</a></b><p class="muted small" style="margin:0">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))} · ${esc(b.area)}, ${esc(b.city)}</p></div></div>
-    <a href="#/biz/${esc(b.id)}"><img class="pimg" loading="lazy" src="${esc((b.imgs&&b.imgs[0])||b.img)}" alt=""></a>
-    <div class="pact"><a class="btn g s" href="#/biz/${esc(b.id)}" style="font-size:.85rem">View business</a><button data-x="share|${esc(b.id)}" aria-label="Share">↗️</button></div></article>`;
-  return `<h1>📸 Feed</h1>${segSvc("f")}
-  <div class="card pad composer"><span class="av">${initial((P&&P.name)||"You")}</span><button class="cin" data-x="newpost|x">Share a photo or your work…</button><button class="btn o s" data-x="newq|x">❓ Ask</button></div>
-  <div style="margin-top:12px">${items.length?items.map(i=>i.kind==="p"?postHtml(i.p,my):bhtml(i.b)).join(""):`<div class="empty"><b>📸 No photos yet</b>Be the first to share a photo.</div>`}</div>`;
+  const bp=[];bl.forEach(b=>{const ims=[...new Set((b.imgs&&b.imgs.length?b.imgs:[b.img]).filter(Boolean))];ims.forEach((im,k)=>bp.push({kind:"b",b,im,n:k+1,tot:ims.length,t:(b.t||0)-k}))});
+  const items=[...ps.map(p=>({kind:"p",p,t:p.t||0})),...bp].sort((a,b)=>b.t-a.t);
+  FEED={items,my,shown:0};
+  return `${segSvc("f")}
+  <div class="card composer"><span class="av">${initial((P&&P.name)||"You")}</span><button class="cin" data-x="newpost|x">Share a photo or your work…</button><button class="btn o s askb" data-x="newq|x">❓ Ask</button></div>
+  <div id="fl" style="margin-top:10px">${items.length?"":`<div class="empty"><b>📸 No photos yet</b>Be the first to share a photo.</div>`}</div>
+  <button class="btn o big" id="fm" data-x="feedmore|x" ${items.length>12?"":"hidden"} style="margin:8px 0">Show more</button>`;
+};
+BIND.feed=()=>{
+  feedMore();
+  const btn=$("#fm");if(!btn||!("IntersectionObserver" in window))return;
+  const io=new IntersectionObserver(es=>{if(es.some(e=>e.isIntersecting)&&!btn.hidden)feedMore()},{rootMargin:"600px"});io.observe(btn);
 };
 pages.post=async(q,id)=>{
   const d=await fb.getDoc(dref("posts",id));
@@ -1714,7 +1735,7 @@ XH.reportpost=async id=>{const why=prompt("What is wrong with this post?");if(wh
 // ---- Q&A ----
 pages.qa=async()=>{
   let l=[];try{l=rows(await fb.getDocs(fb.query(col("qs"),fb.orderBy("t","desc"),fb.limit(40))))}catch(e){console.warn(e)}
-  return `<h1>📸 Feed</h1>${segSvc("q")}
+  return `${segSvc("q")}
   <button class="btn g" data-x="newq|x">❓ Ask a question</button>
   <div style="margin-top:12px">${l.length?l.map(x=>`<a class="card pad qi" href="#/q/${esc(x.id)}" style="display:block;color:var(--ink);margin-bottom:10px"><b>${esc(x.q)}</b><p class="muted small" style="margin:4px 0 0">${esc(x.name||"User")} · ${agoT(x.t)} · 💬 ${x.ans||0} answer${(x.ans||0)===1?"":"s"}</p></a>`).join(""):`<div class="empty"><b>❓ No questions yet</b>Ask anything about services, shops or business. Others will answer.</div>`}</div>`;
 };
