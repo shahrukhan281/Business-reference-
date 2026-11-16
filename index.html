@@ -279,6 +279,8 @@ nav a{font-size:.72rem}nav a i{font-size:1.45rem}
 .bseg{display:flex;gap:8px;align-items:center;margin-top:6px}
 .mm{position:relative}.mmb{background:var(--soft);border:0;border-radius:12px;width:42px;height:38px;font-size:1.3rem;font-weight:800;color:var(--muted);cursor:pointer}.mmb.on{background:var(--blue);color:#fff}
 .mmenu{position:absolute;right:0;top:44px;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);z-index:30;min-width:150px;overflow:hidden}.mmenu a{display:block;padding:12px 14px;font-weight:700;color:var(--ink)}
+nav a{-webkit-user-drag:none;touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none;transition:transform .15s}
+nav a.drag{background:var(--soft);border-radius:12px;transform:translateY(-8px) scale(1.08);box-shadow:var(--shadow);z-index:2}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
 </head>
@@ -1030,7 +1032,7 @@ pages.money=async(q)=>{
   ${MONEY.acc.map(a=>{const bl=accBal(a);return `<div class="card acc"><span class="aic ${esc(a.type)}">${(ACC_TYPES[a.type]||"💵").split(" ")[0]}</span><div class="ab"><b>${esc(a.name)}</b><p>Balance: <span class="${bl<0?"neg":"pos"}">${money2(bl)}</span></p></div><button class="dots" data-x="accmenu|${esc(a.id)}" aria-label="Edit or delete">⋯</button></div>`}).join("")}
   ${MONEY.acc.length?"":`<p class="muted small">Add your first account (cash, bank, wallet or card).</p>`}
   <button class="btn o big addacc" data-x="accadd|x">⊕ ADD NEW ACCOUNT</button>
-  <div class="row" style="margin:12px 0"><button class="btn o s" data-x="cats|x">🏷️ Categories</button><button class="btn o s" data-x="csv|${esc(mo)}">⬇ CSV</button></div>
+  <div class="row" style="margin:12px 0"><button class="btn o s" data-x="cats|x">🏷️ Categories</button><button class="btn o s" data-x="csv|x">⬇ Download all (CSV)</button></div>
   ${cl.length?`<div class="card pad" style="margin-top:12px"><h3>Spent by category</h3>${cl.map(([c,v])=>`<div class="cbar"><div class="row between small"><span>${esc(c)}</span><b>${money(v)}</b></div><div class="bt"><i style="width:${Math.max(3,Math.round(v/mx*100))}%"></i></div></div>`).join("")}</div>`:""}
   <div class="head"><h2>Entries</h2></div>
   ${tx.length?tx.map(x=>`<div class="card tx" data-x="edittx|${esc(x.id)}" style="cursor:pointer"><div><b>${esc(x.cat||"Other")}</b><p class="muted small" style="margin:0">${esc(x.date)} · ${esc(accName(x.acc))}${x.note?" · "+esc(x.note):""}</p></div><div class="tr"><b>${x.type==="inc"?"+":"−"} ${money(x.amt)}</b><a href="#" data-x="deltx|${esc(x.id)}" class="small">Delete</a></div></div>`).join(""):`<div class="empty"><b>No entries this month</b>Tap <b>Add</b> to write your first expense or income.</div>`}
@@ -1099,11 +1101,14 @@ function catModal(){
 }
 XH.addtx=()=>txModal();XH.edittx=id=>{const x=MONEY.tx.find(y=>y.id===id);if(x)txModal(x)};XH.accs=()=>accModal();XH.accadd=()=>accModal();XH.accmenu=id=>accMenu(id);XH.cats=()=>catModal();
 XH.deltx=async id=>{if(!confirm("Delete this entry?"))return;try{await fb.deleteDoc(dref("users",U.uid,"tx",id));route(true)}catch(x){toast(friendly(x))}};
-XH.csv=mo=>{
-  const q=s=>'"'+String(s||"").replace(/"/g,'""')+'"',an=id=>(MONEY.acc.find(a=>a.id===id)||{name:""}).name;
-  const l=MONEY.tx.filter(x=>String(x.date).startsWith(mo)).sort((a,b)=>String(a.date).localeCompare(String(b.date)));
-  const csv="Date,Type,Amount (INR),Account,Category,Note\n"+l.map(x=>[x.date,x.type==="inc"?"Income":"Expense",x.amt,q(an(x.acc)),q(x.cat),q(x.note)].join(",")).join("\n");
-  const a=document.createElement("a");a.href=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv"}));a.download="expenses-"+mo+".csv";a.click();
+XH.csv=()=>{
+  const q=s=>'"'+String(s||"").replace(/"/g,'""')+'"',an=id=>(MONEY.acc.find(a=>a.id===id)||{name:"(deleted account)"}).name;
+  const l=[...MONEY.tx].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
+  if(!l.length)return toast("No entries to download yet.");
+  const csv="Date,Type,Amount (INR),Account,Category,Note\r\n"+l.map(x=>[x.date,x.type==="inc"?"Income":"Expense",x.amt,q(an(x.acc)),q(x.cat),q(x.note)].join(",")).join("\r\n")+"\r\n";
+  const u=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"})),a=document.createElement("a");
+  a.href=u;a.download="expenses-"+ymd(new Date())+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
+  toast(l.length+" entries downloaded");
 };
 
 // ---- quotation and invoice maker ----
@@ -1361,7 +1366,7 @@ pages.me=async()=>{
     ${ADMIN?`<a href="#/admin"><span class="ic">🛡️</span>Admin<span class="go">›</span></a>`:""}
     <button id="logout"><span class="ic">🚪</span>Logout</button>
   </div>
-  ${ADMIN?"":`<p class="center small muted" style="padding:14px 0"><a href="#" id="copyid">🔑 Copy my ID (only needed to set up the admin)</a></p>`}`;
+  <p class="center small muted" style="padding:14px 0 0">Tip: hold a bottom tab and drag to move it. <a href="#" data-x="resettabs|x">Reset</a></p>${ADMIN?"":`<p class="center small muted" style="padding:14px 0"><a href="#" id="copyid">🔑 Copy my ID (only needed to set up the admin)</a></p>`}`;
 };
 
 pages.saved=async()=>{
@@ -1765,6 +1770,40 @@ XH.newq=()=>{
 XH.delq=async id=>{if(!confirm("Delete this question?"))return;try{await fb.deleteDoc(dref("qs",id));toast("Deleted");location.hash="#/qa"}catch(x){toast(friendly(x))}};
 XH.delans=async a=>{const [qid,aid]=String(a).split("|");if(!confirm("Delete this answer?"))return;try{const w=fb.writeBatch(db);w.delete(dref("qs",qid,"ans",aid));w.update(dref("qs",qid),{ans:fb.increment(-1)});await w.commit();route(true)}catch(x){toast(friendly(x))}};
 XH.shareq=id=>share("Question on BusinessConnect",shareUrl("/q/"+id));
+
+// ---- drag to rearrange the bottom tabs (Account stays last) ----
+const TABS0=["home","feed","money","bill","me"];
+function applyTabOrder(){
+  const nav=$("nav");let o=null;try{o=JSON.parse(localStorage.getItem("bc_tabs")||"null")}catch{}
+  const want=Array.isArray(o)&&o.length===5&&TABS0.every(x=>o.includes(x))&&o[4]==="me"?o:TABS0;
+  want.forEach(k=>{const a=nav.querySelector(`[data-t="${k}"]`);if(a)nav.appendChild(a)});
+}
+(function(){
+  const nav=$("nav");applyTabOrder();
+  let drag=null,timer=null,sx=0,moved=false,justDragged=false;
+  nav.addEventListener("contextmenu",e=>e.preventDefault());nav.addEventListener("dragstart",e=>e.preventDefault());
+  nav.addEventListener("pointerdown",e=>{
+    const a=e.target.closest("a");if(!a||a.dataset.t==="me")return;
+    sx=e.clientX;moved=false;
+    timer=setTimeout(()=>{drag=a;a.classList.add("drag");try{nav.setPointerCapture(e.pointerId)}catch{}if(navigator.vibrate)try{navigator.vibrate(15)}catch{}},420);
+  });
+  nav.addEventListener("pointermove",e=>{
+    if(!drag){if(timer&&Math.abs(e.clientX-sx)>10){clearTimeout(timer);timer=null}return}
+    e.preventDefault();moved=true;
+    const els=[...nav.querySelectorAll("a")].filter(x=>x.dataset.t!=="me");
+    const over=els.find(x=>{const r=x.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<r.right});
+    if(over&&over!==drag){const r=over.getBoundingClientRect();const after=els.indexOf(over)>els.indexOf(drag);nav.insertBefore(drag,after?over.nextSibling:over)}
+  });
+  const end=()=>{
+    clearTimeout(timer);timer=null;
+    if(drag){drag.classList.remove("drag");justDragged=moved||true;
+      try{localStorage.setItem("bc_tabs",JSON.stringify([...nav.querySelectorAll("a")].map(x=>x.dataset.t)))}catch{}
+      drag=null;setTimeout(()=>justDragged=false,350)}
+  };
+  nav.addEventListener("pointerup",end);nav.addEventListener("pointercancel",end);
+  nav.addEventListener("click",e=>{if(justDragged){e.preventDefault();e.stopImmediatePropagation()}},true);
+})();
+XH.resettabs=()=>{try{localStorage.removeItem("bc_tabs")}catch{}applyTabOrder();toast("Tabs are back to normal")};
 
 // ============ header buttons & theme ============
 $("#sb").onclick=()=>{$("#sp").classList.toggle("on");if($("#sp").classList.contains("on"))$("#sq").focus()};
