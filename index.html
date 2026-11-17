@@ -289,7 +289,7 @@ nav a.drag{background:var(--soft);border-radius:12px;transform:translateY(-8px) 
 .achips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.achips a,.achips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:.82rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit}.achips a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.achips a b{opacity:.85}.achips.act button,.achips.act a{background:var(--soft)}
 .asr{width:100%;margin:8px 0}.bbar{display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px}.ck{display:flex;align-items:center;gap:6px;font-weight:700;margin:0}.ck input{width:20px;height:20px;margin:0}
 .eb{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:1px 6px;font-size:.8rem;cursor:pointer;vertical-align:middle;margin-left:4px;line-height:1.4}
-h1.bt{display:flex;align-items:center;gap:8px;margin:4px 0 6px;flex-wrap:wrap}h1.bt .eb{font-size:.9rem}
+h1.bnm{display:flex;align-items:center;gap:8px;margin:4px 0 6px;flex-wrap:wrap}h1.bnm .eb{font-size:.9rem}
 .rtl{display:flex;align-items:center;gap:8px;margin:4px 0}.rbadge{background:#1b8a2f;color:#fff;font-weight:800;border-radius:6px;padding:3px 9px}
 p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-start;margin:8px 0;flex-wrap:wrap}.dealsin .chips{margin:0}
 .acts{display:flex;gap:6px;margin:12px 0;overflow-x:auto;padding-bottom:4px}.ac{flex:1 0 66px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:.78rem;font-weight:800;color:var(--ink);background:none;border:0;cursor:pointer;text-decoration:none;font-family:inherit;min-width:64px}
@@ -297,6 +297,9 @@ p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-
 .qi h2{margin:0 0 8px}.qi h4{margin:14px 0 2px;font-size:1rem}.qi p{margin:0}.lk2{background:none;border:0;color:var(--blue);font-weight:800;font-size:.95rem;cursor:pointer;padding:6px 0;font-family:inherit;text-decoration:none}
 .cbar{position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));z-index:55;display:flex;gap:10px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(20,60,100,.1)}.cbar .btn{flex:1;text-align:center}
 .cgrid .ct.drag{opacity:.7;transform:scale(1.08);box-shadow:var(--shadow);position:relative;z-index:5}.cgrid .ct{-webkit-user-drag:none;-webkit-touch-callout:none;user-select:none}
+.bhead{display:flex;gap:12px;align-items:flex-start;margin-top:4px}.bhl{flex:1;min-width:0}.bhl h1.bnm{font-size:1.35rem;line-height:1.25;margin:0 0 6px;display:block}.bhl h1.bnm span{word-break:break-word}
+.bthumb{position:relative;flex:0 0 38%;max-width:170px;aspect-ratio:1/1;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);display:block}.bthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.bthumb .pc{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:2px 8px;font-size:.8rem;font-weight:800}
 .stat.two{grid-template-columns:1fr 1fr}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
@@ -777,11 +780,15 @@ pages.biz=async(q,id)=>{
   const canc=!own&&isOpen(b);
   return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
   ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
-  <h1 class="bt">${b.logo&&safeData(b.logo)?`<img src="${b.logo}" alt="" class="blogo">`:""}<span>${esc(b.name)}</span>${ADMIN?`<button class="eb" data-ad="edit|${esc(b.id)}" aria-label="Edit">✏️</button>`:""}</h1>
-  <div class="rtl">${rt?`<a href="#" data-x="torv|x" class="rbadge">${avg.toFixed(1)} ★</a><span class="muted">${rt.n} rating${rt.n>1?"s":""}</span>`:`<span class="muted small">No ratings yet</span>`}${d!=null?`<span class="muted small">· ${kmText(d)} away</span>`:""}</div>
-  <p class="bl">📍 ${esc(b.area)}, ${esc(b.city)}</p>
-  <p class="bl"><b>${CATS[b.cat]||"🏪"} ${esc(b.cat)}</b></p>
-  ${hasTiming(b)?`<p class="bl">${openLabel(b)}</p>`:""}
+  <div class="bhead"><div class="bhl">
+    <h1 class="bnm"><span>${esc(b.name)}</span>${ADMIN?`<button class="eb" data-ad="edit|${esc(b.id)}" aria-label="Edit">✏️</button>`:""}</h1>
+    <div class="rtl">${rt?`<a href="#" data-x="torv|x" class="rbadge">${avg.toFixed(1)} ★</a><span class="muted">${rt.n} rating${rt.n>1?"s":""}</span>`:`<span class="muted small">No ratings yet</span>`}</div>
+    <p class="bl">${esc(b.area)}, ${esc(b.city)}${d!=null?` <span class="muted small">· ${kmText(d)} away</span>`:""}</p>
+    <p class="bl"><b>${esc(b.cat)}</b></p>
+    ${hasTiming(b)?`<p class="bl">${openLabel(b)}</p>`:""}
+  </div>
+  <a class="bthumb" href="#" data-x="gotoph|x" aria-label="Photos"><img src="${esc(imgs[0]||imgOf(b))}" alt="">${imgs.length>1?`<span class="pc">📷 ${imgs.length}</span>`:""}</a></div>
+  ${b.logo&&safeData(b.logo)?"":""}
   ${tagsOf(b).length?`<div class="dealsin"><b>Deals in:</b><div class="chips">${tagsOf(b).map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div></div>`:""}
   <div class="acts">
     ${canc?`<a href="tel:+91${esc(b.phone)}" class="ac"><span style="background:#0a74d6">📞</span>Call Now</a><a target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}" class="ac"><span style="background:#25d366">💬</span>WhatsApp</a>`:""}
@@ -792,7 +799,7 @@ pages.biz=async(q,id)=>{
   ${!own&&!canc?`<span class="closed" style="display:block;margin:8px 0">🔒 Closed now${b.open?" · opens "+esc(t12(b.open)):""}. Call and WhatsApp are available in business hours.</span>`:""}
   ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`:(noCm(b)?"":`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>`)}
   ${noCm(b)?"":`<div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>`}
-  <div class="slider"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
+  <div class="slider" id="phs" style="margin-top:12px"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
   <div class="card pad qi" style="margin-top:12px"><h2>Quick Information</h2>
     <h4>Address</h4><p>${esc(adr)}</p>
     <div class="row" style="gap:18px;margin-bottom:6px"><a target="_blank" rel="noopener" href="${esc(mapsUrl(b))}" class="lk2">🧭 Direction</a><button class="lk2" data-x="copyaddr|${esc(b.id)}">📋 Copy</button></div>
@@ -816,6 +823,7 @@ pages.biz=async(q,id)=>{
   <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report fake / wrong</button>`}</div>
   ${canc?`<div class="cbar"><a class="btn" href="tel:+91${esc(b.phone)}">📞 Call Now</a><a class="btn" style="background:#128c7e" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">💬 WhatsApp</a></div>`:""}`;
 };
+XH.gotoph=()=>{const s=document.getElementById("phs");if(s)s.scrollIntoView({behavior:"smooth",block:"center"})};
 XH.copyaddr=async id=>{const b=await getBiz(id);const s=[b.addr,b.area,b.city].filter(Boolean).join(", ");try{await navigator.clipboard.writeText(s);toast("Address copied")}catch{toast(s)}};
 BIND.biz=()=>{
   if(/review=1/.test(location.hash)){const r=$("#rv");if(r)setTimeout(()=>r.scrollIntoView({behavior:"smooth"}),150)}
