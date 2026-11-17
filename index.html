@@ -288,6 +288,15 @@ nav a.drag{background:var(--soft);border-radius:12px;transform:translateY(-8px) 
 .crow .dh{font-size:1.3rem;color:var(--muted);padding:4px 8px;cursor:grab;touch-action:none;user-select:none}.crow .ce{width:56px;text-align:center;padding:6px}.crow .cn2{flex:1;font-weight:700;min-width:0;word-break:break-word}
 .achips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.achips a,.achips button{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:6px 11px;font-size:.82rem;font-weight:700;cursor:pointer;text-decoration:none;font-family:inherit}.achips a.on{background:var(--blue);color:#fff;border-color:var(--blue)}.achips a b{opacity:.85}.achips.act button,.achips.act a{background:var(--soft)}
 .asr{width:100%;margin:8px 0}.bbar{display:flex;justify-content:space-between;align-items:center;margin:6px 0 10px}.ck{display:flex;align-items:center;gap:6px;font-weight:700;margin:0}.ck input{width:20px;height:20px;margin:0}
+.eb{background:var(--soft);border:1px solid var(--line);border-radius:8px;padding:1px 6px;font-size:.8rem;cursor:pointer;vertical-align:middle;margin-left:4px;line-height:1.4}
+h1.bt{display:flex;align-items:center;gap:8px;margin:4px 0 6px;flex-wrap:wrap}h1.bt .eb{font-size:.9rem}
+.rtl{display:flex;align-items:center;gap:8px;margin:4px 0}.rbadge{background:#1b8a2f;color:#fff;font-weight:800;border-radius:6px;padding:3px 9px}
+p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-start;margin:8px 0;flex-wrap:wrap}.dealsin .chips{margin:0}
+.acts{display:flex;gap:6px;margin:12px 0;overflow-x:auto;padding-bottom:4px}.ac{flex:1 0 66px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:.78rem;font-weight:800;color:var(--ink);background:none;border:0;cursor:pointer;text-decoration:none;font-family:inherit;min-width:64px}
+.ac span{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--soft);border:1px solid var(--line)}
+.qi h2{margin:0 0 8px}.qi h4{margin:14px 0 2px;font-size:1rem}.qi p{margin:0}.lk2{background:none;border:0;color:var(--blue);font-weight:800;font-size:.95rem;cursor:pointer;padding:6px 0;font-family:inherit;text-decoration:none}
+.cbar{position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));z-index:55;display:flex;gap:10px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(20,60,100,.1)}.cbar .btn{flex:1;text-align:center}
+.cgrid .ct.drag{opacity:.7;transform:scale(1.08);box-shadow:var(--shadow);position:relative;z-index:5}.cgrid .ct{-webkit-user-drag:none;-webkit-touch-callout:none;user-select:none}
 .stat.two{grid-template-columns:1fr 1fr}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
@@ -636,11 +645,11 @@ function card(b){
   const meta=[rt?`⭐ ${(rt.s/rt.n).toFixed(1)} (${rt.n})`:"",d!=null?`📍 ${kmText(d)} away`:""].filter(Boolean).join(" · ");
   return `<article class="card biz go" data-go="${esc(b.id)}">
     <div class="top"><a class="pic" href="#/biz/${esc(b.id)}"><img loading="lazy" src="${esc(imgOf(b))}" alt=""></a>
-    <div class="inf"><h3>${esc(b.name)}</h3>
+    <div class="inf"><h3>${esc(b.name)}${ADMIN?` <button class="eb" data-ad="edit|${esc(b.id)}" aria-label="Edit">✏️</button>`:""}</h3>
       <p class="sub">${CATS[b.cat]||"🏪"} ${esc(catName(b.cat))}<br>📍 ${esc(b.area)}, ${esc(b.city)}</p>
       ${noCm(b)?"":`<span class="earn2">💸 ${esc(earnShort(b))}</span>`}${meta?`<span class="meta">${meta}</span>`:""}</div></div>
     ${hasTiming(b)?`<p class="oh">${openLabel(b)}</p>`:""}
-    <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a>${contactHtml(b,"Hi, I found "+b.name+" on BusinessConnect.")}<button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button>${ADMIN?`<button class="btn o s" data-ad="edit|${esc(b.id)}">✏️ Edit</button>`:""}</div>
+    <div class="btns"><a class="btn" href="#/biz/${esc(b.id)}">View</a>${contactHtml(b,"Hi, I found "+b.name+" on BusinessConnect.")}<button class="heart" data-save="${esc(b.id)}" aria-label="Save">${sv?"♥":"♡"}</button></div>
   </article>`;
 }
 // ---- the business form (used by owners and by admin) ----
@@ -649,18 +658,19 @@ function bizForm(b,adm){
   const cur=(b.imgs&&b.imgs.length)?b.imgs:(b.img?[b.img]:[]);
   return `
     <label>Shop / Business name</label><input name="name" maxlength="70" value="${esc(b.name)}">
-    <label>Category <small>(tap and type to search)</small></label><div class="cbx"><input name="cat" autocomplete="off" placeholder="Example: Plumber, Salon, Electrician" value="${esc(b.cat)}"><div class="clist" hidden></div></div>
+    <label>Category <small>(tap and type to search)</small></label><div class="cbx"><input name="cat" autocomplete="off" placeholder="Type category name" value="${esc(b.cat)}"><div class="clist" hidden></div></div>
     <label>${adm?"Owner's name":"Your name"}</label><input name="owner" maxlength="60" value="${esc(b.owner)}">
     <label>Mobile / WhatsApp number</label><input name="phone" type="tel" inputmode="numeric" placeholder="10-digit number" value="${esc(b.phone)}"><p class="muted small" style="margin:2px 0 0">One mobile number can be used for one business only.</p>
     <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>City</label><input name="city" maxlength="40" value="${esc(b.city)}"></div><div style="flex:1"><label>Area</label><input name="area" maxlength="50" value="${esc(b.area)}"></div></div>
+    <label>Full address <small>(optional, shown on the page)</small></label><textarea name="addr" rows="2" maxlength="200" placeholder="Shop no, building, road, landmark">${esc(b.addr)}</textarea>
     <label class="check" style="margin-top:14px"><input type="checkbox" name="cm" ${b.ct==="none"?"":"checked"}><span><b>💸 Give commission to people who refer customers</b><br><small class="muted">Turn off if you do not want referrals.</small></span></label>
     <div class="cmbox"><label>How much commission will you give?</label>
     <select name="ct" class="ct"><option value="percent" ${b.ct==="percent"?"selected":""}>Percent of the bill (%)</option><option value="fixed" ${b.ct==="fixed"?"selected":""}>Fixed money (₹)</option><option value="talk" ${b.ct==="talk"?"selected":""}>Talk to me first</option></select>
     <div class="cvw"><label class="cvl">Amount</label><input name="cv" type="number" min="0" step="any" value="${b.cv?esc(b.cv):""}"></div>
-    <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="Example: Paid within 7 days after the customer pays.">${esc(b.note)}</textarea></div>
+    <label>When and how do you pay? <small>(optional)</small></label><textarea name="note" rows="2" maxlength="200" placeholder="When will you pay the commission?">${esc(b.note)}</textarea></div>
     <label>About your business <small>(optional)</small></label><textarea name="desc" rows="3" maxlength="400">${esc(b.desc)}</textarea>
-    <label>Keywords <small>(help people find you, separate with commas)</small></label><input name="tags" maxlength="160" placeholder="Example: thai massage, spa, body massage" value="${esc(b.tags)}">
-    <label>Services you offer <small>(optional, one per line, price after a dash)</small></label><div class="svchips"></div><textarea name="svc" rows="4" maxlength="600" placeholder="Thai massage - ₹1500&#10;Foot massage - ₹800">${esc(b.svc)}</textarea>
+    <label>Keywords <small>(help people find you, separate with commas)</small></label><input name="tags" maxlength="160" placeholder="plumber, pipe repair, bathroom fitting" value="${esc(b.tags)}">
+    <label>Services you offer <small>(optional, one per line, price after a dash)</small></label><div class="svchips"></div><textarea name="svc" rows="4" maxlength="600" placeholder="Pipe repair - ₹300&#10;Tap fitting - ₹150">${esc(b.svc)}</textarea>
     <h3 class="fh">🕘 Business timing</h3><p class="muted small" style="margin:0">Call and WhatsApp buttons show only in these hours. Leave empty to show always.</p>
     <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>Opens</label><input type="time" name="open" value="${esc(b.open)}"></div><div style="flex:1"><label>Closes</label><input type="time" name="close" value="${esc(b.close)}"></div></div>
     <div class="dayrow">${DAYN.map((n,i)=>`<label class="dchip"><input type="checkbox" name="d" value="${i}" ${dsel.includes(i)?"checked":""}><span>${n}</span></label>`).join("")}</div>
@@ -668,7 +678,7 @@ function bizForm(b,adm){
     <input name="gst" maxlength="15" placeholder="15-character GST number" value="${esc(b.gst)}" style="text-transform:uppercase">
     <h3 class="fh">🔗 Social media <small class="muted">(optional)</small></h3>
     <input name="ig" placeholder="Instagram link or @name" value="${esc(b.ig)}"><input name="fb" placeholder="Facebook link" value="${esc(b.fb)}" style="margin-top:8px"><input name="yt" placeholder="YouTube link" value="${esc(b.yt)}" style="margin-top:8px"><input name="web" placeholder="Website" value="${esc(b.web)}" style="margin-top:8px">
-    <h3 class="fh">📍 Shop location</h3><p class="muted small" style="margin:0">Stand at the shop and tap the button. People can then find you with “Near me”.</p>
+    <h3 class="fh">📍 Shop location</h3><p class="muted small" style="margin:0">You can type the address above, or stand at the shop and tap the button. Saved location lets people find you with “Near me”.</p>
     <input type="hidden" name="lat" value="${b.lat==null?"":esc(b.lat)}"><input type="hidden" name="lng" value="${b.lng==null?"":esc(b.lng)}">
     <div class="row" style="margin-top:8px"><button type="button" class="btn o s locbtn">📍 Use my current location</button><span class="small muted locst">${b.lat!=null&&b.lat!==""?"✔ Location saved":"Not saved yet"}</span></div>
     <label>Or paste a Google Maps link / write latitude, longitude</label><div class="row" style="flex-wrap:nowrap"><input class="mlin" placeholder="18.5204, 73.8567 or Maps link"><button type="button" class="btn o s mlbtn">Save</button></div>
@@ -692,7 +702,7 @@ function readBiz(form){
   const gst=g("gst").toUpperCase();if(gst&&!GSTRE.test(gst))return{error:"The GST number does not look right. It has 15 letters and numbers, or leave it empty."};
   const open=g("open"),close=g("close");if(!!open!==!!close)return{error:"Please fill both opening and closing time, or leave both empty."};
   const lat=parseFloat(g("lat")),lng=parseFloat(g("lng"));
-  return{data:{name:g("name"),cat,owner:g("owner"),phone,city:g("city"),area:g("area"),ct,cv:(ct==="talk"||ct==="none")?0:cv,note:cmOn?g("note"):"",desc:g("desc"),tags:g("tags"),svc:g("svc"),
+  return{data:{name:g("name"),cat,owner:g("owner"),phone,city:g("city"),area:g("area"),addr:g("addr").slice(0,200),ct,cv:(ct==="talk"||ct==="none")?0:cv,note:cmOn?g("note"):"",desc:g("desc"),tags:g("tags"),svc:g("svc"),
     open,close,days:f.getAll("d").map(Number).sort(),gst,ig:socialUrl("ig",g("ig")),fb:socialUrl("fb",g("fb")),yt:socialUrl("yt",g("yt")),web:socialUrl("web",g("web")),lat:isNaN(lat)?null:lat,lng:isNaN(lng)?null:lng}};
 }
 function bindBizForm(form){
@@ -753,7 +763,7 @@ function bindEdit(form){
     }catch(x){console.error(x);fail(friendly(x));btn.disabled=false;btn.textContent="Save"}
   };
 }
-function mapsUrl(b){return b.lat!=null&&b.lat!==""?`https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}`:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent([b.name,b.area,b.city].join(", "))}`}
+function mapsUrl(b){return b.lat!=null&&b.lat!==""?`https://www.google.com/maps/search/?api=1&query=${b.lat},${b.lng}`:`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(b.addr?[b.addr,b.area,b.city].join(", "):[b.name,b.area,b.city].join(", "))}`}
 pages.biz=async(q,id)=>{
   const b=id?await getBiz(id):null;
   const own=U&&b&&b.id===U.uid;
@@ -763,23 +773,36 @@ pages.biz=async(q,id)=>{
   const imgs=imgsOf(b),days=(b.days&&b.days.length&&b.days.length<7)?b.days.map(i=>DAYN[i]).join(", "):"Every day";
   const soc=[["ig","📸 Instagram"],["fb","👍 Facebook"],["yt","▶️ YouTube"],["web","🌐 Website"]].filter(([k])=>b[k]&&normUrl(b[k])).map(([k,l])=>`<a href="${esc(normUrl(b[k]))}" target="_blank" rel="noopener nofollow">${l}</a>`).join("");
   const list=(rt?[...rt.list].sort(lastOrder):[]).slice(0,20);
+  const adr=[b.addr,b.area,b.city].filter(Boolean).join(", ");
+  const canc=!own&&isOpen(b);
   return `<p style="margin:12px 0"><a href="#/list"><b>← Back</b></a></p>
   ${b.status!=="approved"?`<div class="note">⏳ This business is not public yet (${esc(b.status)}). Only you and the admin can see it.</div>`:""}
-  <div class="slider"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
-  <h1 style="margin-top:12px;display:flex;align-items:center;gap:10px">${b.logo&&safeData(b.logo)?`<img src="${b.logo}" alt="" class="blogo">`:""}<span>${esc(b.name)}</span></h1>
-  <p class="muted" style="margin:0">${CATS[b.cat]||"🏪"} ${esc(b.cat)} · 📍 ${esc(b.area)}, ${esc(b.city)}${d!=null?" · "+kmText(d)+" away":""}</p>
-  <p style="margin:6px 0">${rt?`<a href="#" data-x="torv|x"><b>⭐ ${avg.toFixed(1)}</b> <span class="muted">(${rt.n} review${rt.n>1?"s":""})</span></a>`:`<span class="muted small">No reviews yet</span>`}${hasTiming(b)?` · <span class="small">${openLabel(b)}</span>`:""}</p>
-  ${tagsOf(b).length?`<div class="chips" style="margin-top:6px">${tagsOf(b).map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div>`:""}
+  <h1 class="bt">${b.logo&&safeData(b.logo)?`<img src="${b.logo}" alt="" class="blogo">`:""}<span>${esc(b.name)}</span>${ADMIN?`<button class="eb" data-ad="edit|${esc(b.id)}" aria-label="Edit">✏️</button>`:""}</h1>
+  <div class="rtl">${rt?`<a href="#" data-x="torv|x" class="rbadge">${avg.toFixed(1)} ★</a><span class="muted">${rt.n} rating${rt.n>1?"s":""}</span>`:`<span class="muted small">No ratings yet</span>`}${d!=null?`<span class="muted small">· ${kmText(d)} away</span>`:""}</div>
+  <p class="bl">📍 ${esc(b.area)}, ${esc(b.city)}</p>
+  <p class="bl"><b>${CATS[b.cat]||"🏪"} ${esc(b.cat)}</b></p>
+  ${hasTiming(b)?`<p class="bl">${openLabel(b)}</p>`:""}
+  ${tagsOf(b).length?`<div class="dealsin"><b>Deals in:</b><div class="chips">${tagsOf(b).map(t=>`<a href="#/list?q=${encodeURIComponent(t)}">${esc(t)}</a>`).join("")}</div></div>`:""}
+  <div class="acts">
+    ${canc?`<a href="tel:+91${esc(b.phone)}" class="ac"><span style="background:#0a74d6">📞</span>Call Now</a><a target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}" class="ac"><span style="background:#25d366">💬</span>WhatsApp</a>`:""}
+    <a target="_blank" rel="noopener" href="${esc(mapsUrl(b))}" class="ac"><span>🧭</span>Direction</a>
+    <button data-x="share|${esc(b.id)}" class="ac"><span>🔗</span>Share</button>
+    <button data-x="qr|${esc(b.id)}" class="ac"><span>🔳</span>QR code</button>
+  </div>
+  ${!own&&!canc?`<span class="closed" style="display:block;margin:8px 0">🔒 Closed now${b.open?" · opens "+esc(t12(b.open)):""}. Call and WhatsApp are available in business hours.</span>`:""}
+  ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`:(noCm(b)?"":`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>`)}
   ${noCm(b)?"":`<div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>`}
-  ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`
-  :`${noCm(b)?"":`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>`}
-   <div class="rowbtn" style="margin-top:10px">${isOpen(b)?`<a class="btn" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect and want to refer a customer.")}">💬 WhatsApp</a><a class="btn o" href="tel:+91${esc(b.phone)}">📞 Call</a>`:`<span class="closed" style="flex:1">🔒 Closed now · opens ${esc(t12(b.open))}. Call and WhatsApp are available in business hours.</span>`}</div>`}
-  <div class="row" style="margin:10px 0">${ADMIN?`<button class="btn g s" data-ad="edit|${esc(b.id)}">✏️ Edit</button>`:""}<button class="btn o s" data-x="share|${esc(b.id)}">🔗 Share</button><button class="btn o s" data-x="qr|${esc(b.id)}">🔳 QR code</button><a class="btn o s" target="_blank" rel="noopener" href="${esc(mapsUrl(b))}">🗺️ Map</a></div>
-  ${svcOf(b).length?`<div class="card pad" style="margin-top:12px"><h3>Services</h3>${svcOf(b).map(([n,p])=>`<div class="svc"><span>${esc(n)}</span><b>${esc(p)}</b></div>`).join("")}</div>`:""}
-  <div class="card pad" style="margin-top:12px"><h3>About</h3><p>${esc(b.desc||"—")}</p><p class="muted small" style="margin:4px 0">Owner: ${esc(b.owner)}</p>
-    ${hasTiming(b)?`<p class="muted small" style="margin:4px 0">🕘 ${esc(t12(b.open))} – ${esc(t12(b.close))} · ${esc(days)}</p>`:""}
-    ${b.gst?`<p class="muted small" style="margin:4px 0">🧾 GST: ${esc(b.gst)}</p>`:""}
+  <div class="slider"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
+  <div class="card pad qi" style="margin-top:12px"><h2>Quick Information</h2>
+    <h4>Address</h4><p>${esc(adr)}</p>
+    <div class="row" style="gap:18px;margin-bottom:6px"><a target="_blank" rel="noopener" href="${esc(mapsUrl(b))}" class="lk2">🧭 Direction</a><button class="lk2" data-x="copyaddr|${esc(b.id)}">📋 Copy</button></div>
+    ${hasTiming(b)?`<h4>Business Hours</h4><p>${openLabel(b)}<br><span class="muted small">${esc(t12(b.open))} – ${esc(t12(b.close))} · ${esc(days)}</span></p>`:""}
+    ${b.web&&normUrl(b.web)?`<h4>Website</h4><p><a href="${esc(normUrl(b.web))}" target="_blank" rel="noopener nofollow">${esc(b.web)}</a></p>`:""}
+    <h4>Owner</h4><p>${esc(b.owner)}</p>
+    ${b.gst?`<h4>GST</h4><p>${esc(b.gst)}</p>`:""}
     ${soc?`<div class="soc">${soc}</div>`:""}</div>
+  ${svcOf(b).length?`<div class="card pad" style="margin-top:12px"><h3>Services</h3>${svcOf(b).map(([n,p])=>`<div class="svc"><span>${esc(n)}</span><b>${esc(p)}</b></div>`).join("")}</div>`:""}
+  ${b.desc?`<div class="card pad" style="margin-top:12px"><h3>Business summary</h3><p>${esc(b.desc)}</p></div>`:""}
   <div class="card pad" id="rv" style="margin-top:12px"><h3>Reviews</h3>
     ${own?`<p class="muted small">You cannot review your own business.</p>`:!U?`<button class="btn g s" data-x="rvlogin|x">Login to write a review</button>`
     :`<div class="stars" id="stars">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" class="${mine&&n<=mine.stars?"on":""}" aria-label="${n} star">★</button>`).join("")}</div>
@@ -790,8 +813,10 @@ pages.biz=async(q,id)=>{
   ${noCm(b)?"":`  <div class="card pad" style="margin-top:12px"><h3>How to earn here</h3>
    <p>1. Tell your customer about this shop.<br>2. Tap “I referred a customer” and write their name.<br>3. The referral shows as Pending. When the customer buys, the shop marks it Done and pays you.</p></div>
   <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>`}
-  <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report fake / wrong</button>`}</div>`;
+  <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report fake / wrong</button>`}</div>
+  ${canc?`<div class="cbar"><a class="btn" href="tel:+91${esc(b.phone)}">📞 Call Now</a><a class="btn" style="background:#128c7e" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">💬 WhatsApp</a></div>`:""}`;
 };
+XH.copyaddr=async id=>{const b=await getBiz(id);const s=[b.addr,b.area,b.city].filter(Boolean).join(", ");try{await navigator.clipboard.writeText(s);toast("Address copied")}catch{toast(s)}};
 BIND.biz=()=>{
   if(/review=1/.test(location.hash)){const r=$("#rv");if(r)setTimeout(()=>r.scrollIntoView({behavior:"smooth"}),150)}
   const sb=$("#stars");if(!sb)return;
@@ -842,6 +867,31 @@ pages.list=async(q)=>{
   ${f.near&&GEO?`<p class="muted small" style="margin:8px 0 0">Shops without a saved location come last.</p>`:""}
   <p class="muted small" id="cnt" style="margin:12px 0">${res.length} business${res.length===1?"":"es"} found</p>
   ${res.length?`<div class="grid">${res.map(card).join("")}</div>`:(l.length?`<div class="empty"><b>🔎 Nothing found</b>Try another word or remove a filter.</div>`:emptyBiz)}`;
+};
+BIND.home=()=>{
+  const g=$(".cgrid");if(!g||!ADMIN)return;
+  g.insertAdjacentHTML("afterend",`<p class="muted small" style="margin:-4px 0 8px;text-align:center">🛠 Admin: hold a category and drag to change the order for everyone.</p>`);
+  let drag=null,timer=null,sx=0,sy=0,moved=false,just=false;
+  const tiles=()=>[...g.querySelectorAll(".ct:not(.showmore)")];
+  g.addEventListener("contextmenu",e=>{if(e.target.closest(".ct"))e.preventDefault()});g.addEventListener("dragstart",e=>e.preventDefault());
+  g.addEventListener("pointerdown",e=>{const a=e.target.closest(".ct:not(.showmore)");if(!a)return;sx=e.clientX;sy=e.clientY;moved=false;
+    timer=setTimeout(()=>{drag=a;a.classList.add("drag");try{g.setPointerCapture(e.pointerId)}catch{}if(navigator.vibrate)try{navigator.vibrate(15)}catch{}},450)});
+  g.addEventListener("pointermove",e=>{
+    if(!drag){if(timer&&(Math.abs(e.clientX-sx)>10||Math.abs(e.clientY-sy)>10)){clearTimeout(timer);timer=null}return}
+    e.preventDefault();moved=true;
+    const over=tiles().find(x=>{const r=x.getBoundingClientRect();return e.clientX>=r.left&&e.clientX<r.right&&e.clientY>=r.top&&e.clientY<r.bottom});
+    if(over&&over!==drag){const l=tiles(),after=l.indexOf(over)>l.indexOf(drag);g.insertBefore(drag,after?over.nextSibling:over)}
+  });
+  g.addEventListener("touchmove",e=>{if(drag&&e.cancelable)e.preventDefault()},{passive:false});
+  const end=async()=>{clearTimeout(timer);timer=null;if(!drag)return;
+    drag.classList.remove("drag");drag=null;just=true;setTimeout(()=>just=false,350);
+    if(!moved)return;
+    const list=tiles().map(x=>{const n=decodeURIComponent(x.getAttribute("href").split("cat=")[1]);return{n,e:CATS[n]||"🏪"}});
+    try{await fb.setDoc(dref("config","cats"),{list,t:Date.now()});setCats(list);try{localStorage.setItem("bc_cats",JSON.stringify(list))}catch{}bust();toast("Order saved for everyone")}
+    catch(x){toast(friendly(x))}
+  };
+  g.addEventListener("pointerup",end);g.addEventListener("pointercancel",end);
+  g.addEventListener("click",e=>{if(just){e.preventDefault();e.stopImmediatePropagation()}},true);
 };
 BIND.list=async()=>{
   if(/near=1/.test(location.hash)&&!GEO){
@@ -960,9 +1010,9 @@ async function jobModal(){
   const b=await getBiz(U.uid);
   if(!b)return toast("Please add your business first.");
   const m=modal(`<h2>Post a free job</h2><p class="muted small">Admin checks it first. After approval it is live.</p>
-   <label>Job title</label><input id="jt" maxlength="80" placeholder="Example: Sales boy">
+   <label>Job title</label><input id="jt" maxlength="80" placeholder="Job title">
    <label>Type</label><select id="jy">${JOB_TYPES.map(t=>`<option>${t}</option>`).join("")}</select>
-   <label>Salary <small>(optional)</small></label><input id="js" maxlength="40" placeholder="Example: ₹12,000 – ₹15,000 per month">
+   <label>Salary <small>(optional)</small></label><input id="js" maxlength="40" placeholder="Salary per month">
    <div class="row" style="flex-wrap:nowrap"><div style="flex:1"><label>City</label><input id="jc" maxlength="40" value="${esc(b.city)}"></div><div style="flex:1"><label>Area</label><input id="ja" maxlength="50" value="${esc(b.area)}"></div></div>
    <label>Details <small>(optional)</small></label><textarea id="jd" rows="4" maxlength="500" placeholder="Work, timing, experience needed"></textarea>
    <label>Contact number</label><input id="jp" type="tel" inputmode="numeric" maxlength="10" value="${esc(b.phone)}">
@@ -1085,7 +1135,7 @@ function txModal(ex){
 }
 function accModal(){
   const m=modal(`<h2>Add an account</h2>
-    <label>Name</label><input id="an" maxlength="30" placeholder="Example: SBI Savings">
+    <label>Name</label><input id="an" maxlength="30" placeholder="Account name">
     <label>Type</label><select id="at">${Object.entries(ACC_TYPES).map(([k,v])=>`<option value="${k}">${v}</option>`).join("")}</select>
     <label>Money in it now (₹)</label><input id="ao" type="number" inputmode="decimal" step="any" placeholder="0">
     <p class="err" id="ae"></p><button class="btn g big" id="as">Add account</button>`);
@@ -1726,7 +1776,6 @@ const XFILE=`<label class="btn o s" style="display:inline-flex;margin:4px 0">�
 function adminJobs(){
   const m=modal(`<h2>Add many jobs</h2>
    <p class="muted small">One job per line, separated by commas:<br><b>title, type, salary, city, area, mobile, business name, details</b></p>
-   <p class="small" style="background:var(--soft);padding:8px;border-radius:10px">Example:<br>Shop helper, Full-time, 12000 per month, Pune, Pimpri, 9876543210, Sharma Sweets, Need a helper for the shop<br>Delivery boy, Part-time, 8000, Pune, Akurdi, 9123456780, City Mobiles, Own bike needed</p>
    <p class="muted small">Type: ${JOB_TYPES.join(", ")}. Wrong type becomes Full-time.</p>
    <div class="row">${XFILE}<button class="btn o s" id="sj">⬇ Sample CSV</button></div>
    <textarea id="jt2" rows="7" placeholder="Paste your lines here"></textarea>
@@ -1772,7 +1821,6 @@ function adminBulk(){
   const cats=Object.keys(CATS);
   const m=modal(`<h2>Add many businesses</h2>
    <p class="muted small">One business per line. Separate with commas:<br><b>name, category, owner, mobile, city, area, commission</b></p>
-   <p class="small" style="background:var(--soft);padding:8px;border-radius:10px">Example:<br>Sharma Sweets, Grocery, Raj Sharma, 9876543210, Pune, Pimpri, 10%<br>City Mobiles, Mobile Phones, Amit, 9123456780, Pune, Akurdi, 300<br>Raj Tutors, Education, Raj, 9012345678, Pune, Nigdi, talk</p>
    <p class="muted small">Commission: <b>10%</b> = percent, <b>300</b> = fixed ₹, <b>talk</b> = talk to owner, <b>none</b> = no commission. Wrong category becomes "Other Services".</p>
    <div class="row">${XFILE}<button class="btn o s" id="sb">⬇ Sample CSV</button></div>
    <p class="muted small" style="margin:2px 0">Excel columns in this order. Owner empty = "Owner", commission empty = none.</p>
@@ -1955,7 +2003,7 @@ BIND.q=()=>{
 };
 XH.newq=()=>{
   if(!U)return needLogin("Please login to ask");
-  const m=modal(`<h2>Ask a question</h2><label>Your question</label><input id="qq" maxlength="150" placeholder="Example: Which is the best AC repair shop in Kondhwa?"><label>More details <small>(optional)</small></label><textarea id="qd" rows="3" maxlength="500"></textarea><p class="err" id="qe"></p><button class="btn g big" id="qg">Post question</button>`);
+  const m=modal(`<h2>Ask a question</h2><label>Your question</label><input id="qq" maxlength="150" placeholder="Write your question: which is the best AC repair shop in Kondhwa?"><label>More details <small>(optional)</small></label><textarea id="qd" rows="3" maxlength="500"></textarea><p class="err" id="qe"></p><button class="btn g big" id="qg">Post question</button>`);
   $("#qg",m).onclick=async()=>{const q=$("#qq",m).value.trim(),er=$("#qe",m);if(q.length<8)return er.textContent="Please write your question.";const btn=$("#qg",m);btn.disabled=true;
     try{const r=await fb.addDoc(col("qs"),{uid:U.uid,name:P.name,q,detail:$("#qd",m).value.trim(),ans:0,t:Date.now()});m.close();location.hash="#/q/"+r.id}catch(x){er.textContent=friendly(x);btn.disabled=false}};
 };
