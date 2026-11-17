@@ -1551,6 +1551,7 @@ const app=$("#app");
 const GATED=new Set(["shop","edit","refs","me","saved","admin","money","bill","chat","chats"]);
 let tok=0;
 const PUB=new Set(["home","list","jobs","articles","qa"]);
+const MEMP=new Set(["feed","money","bill","me","refs","saved","shop"]),MC=new Map();
 async function route(keep){
   if(!READY){if(!app.innerHTML.trim())app.innerHTML=spin();return}
   const my=++tok;stopChat();document.querySelectorAll(".mw").forEach(x=>x.remove());
@@ -1570,10 +1571,12 @@ async function route(keep){
   if(GATED.has(name)&&!U){show(loginPage("Please login to use this. It only takes a minute."));bindLogin();return}
   if(!pages[name]){show(`<div class="empty"><b>Page not found</b><a class="btn" href="#/">Go home</a></div>`);return}
   const PK="bc_pc2:"+(location.hash||"#/"),cacheable=PUB.has(name)&&!keep;
-  let cached=null;if(cacheable)try{cached=localStorage.getItem(PK)}catch{}
+  const MK=(U?U.uid:"")+PK,mem=MEMP.has(name)&&!keep&&!!U;
+  let cached=null;if(cacheable)try{cached=localStorage.getItem(PK)}catch{}else if(mem)cached=MC.get(MK)||null;
   if(cached){app.innerHTML=cached;window.scrollTo(0,0);bind(name)}else if(!keep)app.innerHTML=spin();
   try{const html=await pages[name](q,id);
     if(cacheable)try{if(html.length<900000)localStorage.setItem(PK,html);else localStorage.removeItem(PK)}catch{try{Object.keys(localStorage).filter(k=>k.startsWith("bc_pc2:")).forEach(k=>localStorage.removeItem(k))}catch{}}
+    if(mem)MC.set(MK,html);
     if(cached&&html===cached)return;
     if(cached){if(my===tok){const y=window.scrollY;app.innerHTML=html;window.scrollTo(0,y);bind(name)}}
     else if(show(html))bind(name)}
