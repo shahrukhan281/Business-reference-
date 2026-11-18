@@ -295,7 +295,7 @@ p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-
 .acts{display:flex;gap:6px;margin:12px 0;overflow-x:auto;padding-bottom:4px}.ac{flex:1 0 66px;display:flex;flex-direction:column;align-items:center;gap:5px;font-size:.78rem;font-weight:800;color:var(--ink);background:none;border:0;cursor:pointer;text-decoration:none;font-family:inherit;min-width:64px}
 .ac span{width:50px;height:50px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;background:var(--soft);border:1px solid var(--line)}
 .qi h2{margin:0 0 8px}.qi h4{margin:14px 0 2px;font-size:1rem}.qi p{margin:0}.lk2{background:none;border:0;color:var(--blue);font-weight:800;font-size:.95rem;cursor:pointer;padding:6px 0;font-family:inherit;text-decoration:none}
-.cbar{position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));z-index:55;display:flex;gap:10px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(20,60,100,.1)}.cbar .btn{flex:1;text-align:center}
+.callbar{position:fixed;left:0;right:0;bottom:calc(60px + env(safe-area-inset-bottom));z-index:55;display:flex;gap:10px;padding:10px 12px;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -4px 14px rgba(20,60,100,.1)}.callbar .btn{flex:1;text-align:center}
 .cgrid .ct.drag{opacity:.7;transform:scale(1.08);box-shadow:var(--shadow);position:relative;z-index:5}.cgrid .ct{-webkit-user-drag:none;-webkit-touch-callout:none;user-select:none}
 .bhead{display:flex;gap:12px;align-items:flex-start;margin-top:4px}.bhl{flex:1;min-width:0}.bhl h1.bnm{font-size:1.35rem;line-height:1.25;margin:0 0 6px;display:block}.bhl h1.bnm span{word-break:break-word}
 .bthumb{position:relative;flex:0 0 38%;max-width:170px;aspect-ratio:1/1;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);display:block}.bthumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -303,6 +303,7 @@ p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-
 .refrow{display:flex;gap:8px;align-items:stretch;margin:10px 0}.refrow .btn{flex:1.25;min-height:54px;font-size:.95rem;padding:8px 10px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center}
 .refrow .money{flex:1;margin:0;padding:6px 8px;border-radius:14px;border-width:2px;display:flex;flex-direction:column;justify-content:center;min-height:54px}.refrow .money small{font-size:.66rem;line-height:1.1}.refrow .money b{font-size:1.05rem;line-height:1.2}
 .wam{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:10px;font:inherit;font-size:.9rem;margin:8px 0}
+.seg3{grid-template-columns:1fr 1fr 1fr}
 .stat.two{grid-template-columns:1fr 1fr}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
@@ -345,7 +346,7 @@ const firebaseConfig = {
 const $=(s,r=document)=>r.querySelector(s), $$=(s,r=document)=>[...r.querySelectorAll(s)];
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const CATS_DEFAULT_ORDER=null;
-const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Clothing and Fashion":"👗","Grocery":"🛒","Restaurants and Hotels":"🍽️","Automobile":"🚗","Education":"🎓","Coaching Classes":"📚","Travel and Tourism":"✈️","Beauty and Salon":"💇","Healthcare Services":"🏥","Construction":"🏗️","Interior Design":"🛋️","Electrician":"⚡","Plumber":"🚰","Computer and IT Classes":"🖥️","Inverter and Battery":"🔋","Furniture":"🪑","Digital Marketing":"📣","Web Development":"💻","Insurance":"🛡️","Financial Services":"💰","Event Management":"🎉","Wholesale and Retail":"📦","Other Services":"🧰"};
+const CATS={"Real Estate":"🏠","Electronics":"🔌","Mobile Phones":"📱","Clothing and Fashion":"👔👗","Grocery":"🛒","Restaurants and Hotels":"🍽️","Automobile":"🚗","Education":"🎓","Travel and Tourism":"✈️","Beauty and Salon":"💇","Healthcare Services":"🏥","Construction":"🏗️","Interior Design":"🛋️","Electrician":"⚡","Plumber":"🚰","Inverter and Battery":"🔋","Furniture":"🪑","Digital Marketing":"📣","Insurance":"🛡️","Financial Services":"💰","Event Management":"🎉","Wholesale and Retail":"📦","Other Services":"🧰"};
 const SHORT={"Clothing and Fashion":"Fashion","Restaurants and Hotels":"Food & Hotels","Healthcare Services":"Health","Wholesale and Retail":"Wholesale","Financial Services":"Finance","Travel and Tourism":"Travel","Event Management":"Events",};
 const catName=c=>SHORT[c]||c;
 const art=(e,a,b)=>"data:image/svg+xml;utf8,"+encodeURIComponent(`<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 300'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0' stop-color='${a}'/><stop offset='1' stop-color='${b}'/></linearGradient></defs><rect width='400' height='300' fill='url(#g)'/><text x='200' y='195' font-size='120' text-anchor='middle'>${e}</text></svg>`);
@@ -390,7 +391,8 @@ function modal(html){const w=document.createElement("div");w.className="mw";w.in
 let fb={},db=null,auth=null;
 let U=null,P=null,ADMIN=false,READY=false,SAVED=new Set(),NEXT=null;
 const col=n=>fb.collection(db,n), dref=(...p)=>fb.doc(db,...p);
-const rows=s=>s.docs.map(d=>({id:d.id,...d.data()}));
+const CATMIG={"Coaching Classes":"Education","Computer and IT Classes":"Education","Web Development":"Education"};
+const rows=s=>s.docs.map(d=>{const o={id:d.id,...d.data()};if(o.cat&&CATMIG[o.cat])o.cat=CATMIG[o.cat];return o});
 
 async function loadExtras(){
   await Promise.all([
@@ -398,7 +400,7 @@ async function loadExtras(){
     fb.getDocs(col("users/"+U.uid+"/saved")).then(s=>{SAVED=new Set(s.docs.map(d=>d.id))}).catch(()=>{SAVED=new Set()})]);
 }
 let cache={at:0,list:[]};
-const bust=()=>{cache.at=0};
+let ADC=null;const bust=()=>{cache.at=0;ADC=null};
 async function approved(){
   if(Date.now()-cache.at<30000){await ratings();return cache.list}
   const [s]=await Promise.all([fb.getDocs(fb.query(col("businesses"),fb.where("status","==","approved"))),ratings()]);
@@ -625,7 +627,7 @@ const SUBS={"Beauty and Salon":["Hair Cut","Facial","Manicure","Pedicure","Hair 
 "Travel and Tourism":["Cab Booking","Tour Package","Flight Tickets","Hotel Booking"],
 "Mobile Phones":["Screen Repair","Battery Change","New Phone","Second Hand Phone"],
 "Electronics":["AC Repair","TV Repair","Fridge Repair","Washing Machine Repair"]};
-const CAT_ALIAS={"event":"Event Management","events":"Event Management","mobile seller":"Mobile Phones","mobile":"Mobile Phones","interior designer":"Interior Design"};
+const CAT_ALIAS={"coaching classes":"Education","computer and it classes":"Education","web development":"Education","coaching":"Education","computer classes":"Education","it classes":"Education","food and hotels":"Restaurants and Hotels","hotels":"Restaurants and Hotels","event":"Event Management","events":"Event Management","mobile seller":"Mobile Phones","mobile":"Mobile Phones","interior designer":"Interior Design"};
 const catMatch=v=>{v=String(v||"").trim().toLowerCase();return Object.keys(CATS).find(c=>c.toLowerCase()===v)||CAT_ALIAS[v]||""};
 function parseLatLng(s){
   s=String(s||"");let m;
@@ -824,7 +826,7 @@ pages.biz=async(q,id)=>{
    <p>1. Tell your customer about this shop.<br>2. Tap “I referred a customer” and write their name.<br>3. The referral shows as Pending. When the customer buys, the shop marks it Done and pays you.</p></div>
   <div class="note">The shop pays commission <b>directly to you</b>. This app does not handle money and does not promise earnings.</div>`}
   <div class="row"><button class="btn o s" data-save="${esc(b.id)}">${sv?"♥ Saved":"♡ Save"}</button>${own?"":`<button class="btn o s" data-report="${esc(b.id)}">🚩 Report fake / wrong</button>`}</div>
-  ${canc?`<div class="cbar"><a class="btn" href="tel:+91${esc(b.phone)}">📞 Call Now</a><a class="btn" style="background:#128c7e" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">💬 WhatsApp</a></div>`:""}`;
+  ${canc?`<div class="callbar"><a class="btn" href="tel:+91${esc(b.phone)}">📞 Call Now</a><a class="btn" style="background:#128c7e" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I found "+b.name+" on BusinessConnect.")}">💬 WhatsApp</a></div>`:""}`;
 };
 XH.gotoph=()=>{const s=document.getElementById("phs");if(s)s.scrollIntoView({behavior:"smooth",block:"center"})};
 XH.copyaddr=async id=>{const b=await getBiz(id);const s=[b.addr,b.area,b.city].filter(Boolean).join(", ");try{await navigator.clipboard.writeText(s);toast("Address copied")}catch{toast(s)}};
@@ -864,7 +866,11 @@ pages.list=async(q)=>{
   const rate=b=>{const r=RV.map[b.id];return r?r.s/r.n:0};
   const hit=b=>(!f.cat||b.cat===f.cat)&&(!f.city||b.city===f.city)&&(!f.open||isOpen(b))&&(!f.rate||rate(b)>=+f.rate)&&(!f.q||f.q.toLowerCase().split(/\s+/).every(w=>[b.name,b.cat,b.desc,b.tags,b.svc,b.city,b.area,earnText(b)].join(" ").toLowerCase().includes(w)));
   let res=l.filter(hit);
-  if(f.near&&GEO)res.sort((a,b)=>{const x=distKm(a),y=distKm(b);return (x==null)-(y==null)||(x-y)||0});
+  if(f.near&&GEO){
+    const cty=String((P&&P.city)||"").trim().toLowerCase();
+    res=res.filter(b=>{const d=distKm(b);return d!=null?d<=50:(!!cty&&String(b.city||"").trim().toLowerCase()===cty)});
+    res.sort((a,b)=>{const x=distKm(a),y=distKm(b);return (x==null)-(y==null)||(x-y)||0});
+  }
   else res.sort((a,b)=>(b.featured?1:0)-(a.featured?1:0)||lastOrder(a,b));
   const link=o=>"#/list?"+new URLSearchParams(Object.fromEntries(Object.entries({...f,...o}).filter(([,v])=>v))).toString();
   const tg=(k,v,t)=>`<a class="${f[k]===v?"on":""}" href="${link({[k]:f[k]===v?"":v})}">${t}</a>`;
@@ -875,7 +881,7 @@ pages.list=async(q)=>{
   ${f.cat&&SUBS[f.cat]?`<h3 style="margin:12px 0 6px">Popular ${esc(catName(f.cat))} services</h3><div class="subg">${SUBS[f.cat].map(s=>`<a class="${f.q===s?"on":""}" href="${link({q:f.q===s?"":s})}">${esc(s)}</a>`).join("")}</div>`:""}
    <select id="cityf" aria-label="City"><option value="">📍 All cities</option>${cities.map(c=>`<option ${f.city===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
   ${f.near&&!GEO?`<div class="note" id="geonote">📍 Please allow location to see the shops near you…</div>`:""}
-  ${f.near&&GEO?`<p class="muted small" style="margin:8px 0 0">Shops without a saved location come last.</p>`:""}
+  ${f.near&&GEO?`<p class="muted small" style="margin:8px 0 0">Shops within 50 km, nearest first. Shops without a saved location (from your city) come last.</p>`:""}
   <p class="muted small" id="cnt" style="margin:12px 0">${res.length} business${res.length===1?"":"es"} found</p>
   ${res.length?`<div class="grid">${res.map(card).join("")}</div>`:(l.length?`<div class="empty"><b>🔎 Nothing found</b>Try another word or remove a filter.</div>`:emptyBiz)}`;
 };
@@ -905,8 +911,9 @@ BIND.home=()=>{
   g.addEventListener("click",e=>{if(just){e.preventDefault();e.stopImmediatePropagation()}},true);
 };
 BIND.list=async()=>{
-  if(/near=1/.test(location.hash)&&!GEO){
-    try{GEO=await getPos();route(true)}catch(e){const n=$("#geonote");if(n)n.textContent="⚠️ "+e.message+" Showing all shops."}
+  if(/near=1/.test(location.hash)&&!window.__geoTry){
+    window.__geoTry=1;setTimeout(()=>{window.__geoTry=0},20000);
+    try{const g=await getPos();const ch=!GEO||Math.abs(g.lat-GEO.lat)>.0005||Math.abs(g.lng-GEO.lng)>.0005;GEO=g;if(ch)route(true)}catch(e){const n=$("#geonote");if(n)n.textContent="⚠️ "+e.message+" Showing all shops."}
   }
 };
 // ---- admin: add or edit any business ----
@@ -1100,7 +1107,7 @@ async function loadMoney(){
 const mName=m=>new Date(m+"-01T00:00:00").toLocaleDateString("en-IN",{month:"long",year:"numeric"});
 const mShift=(m,n)=>{const d=new Date(m+"-01T00:00:00");d.setMonth(d.getMonth()+n);return ymd(d).slice(0,7)};
 const money2=n=>(n<0?"-":"")+"₹"+Math.abs(Number(n||0)).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
-const accBal=a=>Number(a.open||0)+MONEY.tx.filter(x=>x.acc===a.id).reduce((s,x)=>s+(x.type==="inc"?1:-1)*Number(x.amt||0),0);
+const accBal=a=>Number(a.open||0)+MONEY.tx.reduce((s,x)=>{const v=Number(x.amt||0);if(x.type==="tr")return s+(x.to===a.id?v:0)-(x.acc===a.id?v:0);return x.acc===a.id?s+(x.type==="inc"?v:-v):s},0);
 pages.money=async(q)=>{
   await loadMoney();
   MONEY.month=/^\d{4}-\d{2}$/.test(q.get("m")||"")?q.get("m"):ymd(new Date()).slice(0,7);
@@ -1120,27 +1127,30 @@ pages.money=async(q)=>{
   <div class="row" style="margin:12px 0"><button class="btn o s" data-x="cats|x">🏷️ Categories</button><button class="btn o s" data-x="csv|x">⬇ Download all (CSV)</button></div>
   ${cl.length?`<div class="card pad" style="margin-top:12px"><h3>Spent by category</h3>${cl.map(([c,v])=>`<div class="cbar"><div class="row between small"><span>${esc(c)}</span><b>${money(v)}</b></div><div class="bt"><i style="width:${Math.max(3,Math.round(v/mx*100))}%"></i></div></div>`).join("")}</div>`:""}
   <div class="head"><h2>Entries</h2></div>
-  ${tx.length?tx.map(x=>`<div class="card tx" data-x="edittx|${esc(x.id)}" style="cursor:pointer"><div><b>${esc(x.cat||"Other")}</b><p class="muted small" style="margin:0">${esc(x.date)} · ${esc(accName(x.acc))}${x.note?" · "+esc(x.note):""}</p></div><div class="tr"><b>${x.type==="inc"?"+":"−"} ${money(x.amt)}</b><a href="#" data-x="deltx|${esc(x.id)}" class="small">Delete</a></div></div>`).join(""):`<div class="empty"><b>No entries this month</b>Tap <b>Add</b> to write your first expense or income.</div>`}
+  ${tx.length?tx.map(x=>`<div class="card tx" data-x="edittx|${esc(x.id)}" style="cursor:pointer"><div><b>${x.type==="tr"?"🔁 Transfer":esc(x.cat||"Other")}</b><p class="muted small" style="margin:0">${esc(x.date)} · ${x.type==="tr"?esc(accName(x.acc))+" → "+esc(accName(x.to)):esc(accName(x.acc))}${x.note?" · "+esc(x.note):""}</p></div><div class="tr"><b>${x.type==="tr"?"⇄":x.type==="inc"?"+":"−"} ${money(x.amt)}</b><a href="#" data-x="deltx|${esc(x.id)}" class="small">Delete</a></div></div>`).join(""):`<div class="empty"><b>No entries this month</b>Tap <b>Add</b> to write your first expense or income.</div>`}
   <p class="muted small center">Only you can see this page. All amounts are in Indian rupees (₹).</p>
   <button class="fab2" data-x="addtx|x" aria-label="Add entry">+</button>`;
 };
 function txModal(ex){
   if(!MONEY.acc.length){toast("Please add an account first.");return accModal()}
   let type=ex?ex.type:"exp";
-  const m=modal(`<h2>${ex?"Edit entry":"Add entry"}</h2><div class="seg" id="tt"><a href="#" class="${type==="exp"?"on":""}" data-t="exp">Expense</a><a href="#" class="${type==="inc"?"on":""}" data-t="inc">Income</a></div>
+  const m=modal(`<h2>${ex?"Edit entry":"Add entry"}</h2><div class="seg seg3" id="tt"><a href="#" class="${type==="exp"?"on":""}" data-t="exp">Expense</a><a href="#" class="${type==="inc"?"on":""}" data-t="inc">Income</a><a href="#" class="${type==="tr"?"on":""}" data-t="tr">Transfer</a></div>
     <label>Amount (₹)</label><input id="ta" type="number" inputmode="decimal" min="0" step="any" placeholder="0" value="${ex?esc(ex.amt):""}">
-    <label>Account</label><select id="tc">${MONEY.acc.map(a=>`<option value="${esc(a.id)}" ${ex&&ex.acc===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}</select>
-    <label>Category</label><select id="tg">${[...new Set([...(ex&&ex.cat?[ex.cat]:[]),...MONEY.cats])].map(c=>`<option ${ex&&ex.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select>
+    <label id="tcl">Account</label><select id="tc">${MONEY.acc.map(a=>`<option value="${esc(a.id)}" ${ex&&ex.acc===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}</select>
+    <div id="tow" hidden><label>To account</label><select id="tto">${MONEY.acc.map(a=>`<option value="${esc(a.id)}" ${ex&&ex.to===a.id?"selected":""}>${esc(a.name)}</option>`).join("")}</select></div>
+    <div id="cgw"><label>Category</label><select id="tg">${[...new Set([...(ex&&ex.cat?[ex.cat]:[]),...MONEY.cats])].map(c=>`<option ${ex&&ex.cat===c?"selected":""}>${esc(c)}</option>`).join("")}</select></div>
     <label>Date</label><input id="td" type="date" value="${ex?esc(ex.date):ymd(new Date())}">
     <label>Note <small>(optional)</small></label><input id="tn" maxlength="80" value="${ex?esc(ex.note||""):""}">
     <p class="err" id="te"></p><button class="btn g big" id="ts">Save</button>`);
-  $$("#tt a",m).forEach(a=>a.onclick=e=>{e.preventDefault();type=a.dataset.t;$$("#tt a",m).forEach(x=>x.classList.toggle("on",x===a))});
+  const sync=()=>{const tr=type==="tr";$("#tow",m).hidden=!tr;$("#cgw",m).hidden=tr;$("#tcl",m).textContent=tr?"From account":"Account";if(tr&&!ex&&MONEY.acc.length>1&&$("#tto",m).value===$("#tc",m).value)$("#tto",m).selectedIndex=($("#tc",m).selectedIndex+1)%MONEY.acc.length};
+  $$("#tt a",m).forEach(a=>a.onclick=e=>{e.preventDefault();type=a.dataset.t;$$("#tt a",m).forEach(x=>x.classList.toggle("on",x===a));sync()});sync();
   $("#ts",m).onclick=async()=>{
     const amt=+$("#ta",m).value,er=$("#te",m);
     if(!(amt>0))return er.textContent="Please write the amount.";
     if(!$("#td",m).value)return er.textContent="Please choose the date.";
+    if(type==="tr"&&$("#tto",m).value===$("#tc",m).value)return er.textContent=MONEY.acc.length<2?"Please add a second account first.":"Choose two different accounts.";
     $("#ts",m).disabled=true;
-    try{const d={type,amt,acc:$("#tc",m).value,cat:$("#tg",m).value,date:$("#td",m).value,note:$("#tn",m).value.trim()};if(ex)await fb.updateDoc(dref("users",U.uid,"tx",ex.id),d);else await fb.addDoc(col("users/"+U.uid+"/tx"),{...d,t:Date.now()});m.close();toast("Saved");route(true)}
+    try{const d={type,amt,acc:$("#tc",m).value,cat:type==="tr"?"Transfer":$("#tg",m).value,date:$("#td",m).value,note:$("#tn",m).value.trim()};d.to=type==="tr"?$("#tto",m).value:"";if(ex)await fb.updateDoc(dref("users",U.uid,"tx",ex.id),d);else await fb.addDoc(col("users/"+U.uid+"/tx"),{...d,t:Date.now()});m.close();toast("Saved");route(true)}
     catch(x){er.textContent=friendly(x);$("#ts",m).disabled=false}
   };
 }
@@ -1190,7 +1200,7 @@ XH.csv=()=>{
   const q=s=>'"'+String(s||"").replace(/"/g,'""')+'"',an=id=>(MONEY.acc.find(a=>a.id===id)||{name:"(deleted account)"}).name;
   const l=[...MONEY.tx].sort((a,b)=>String(a.date).localeCompare(String(b.date)));
   if(!l.length)return toast("No entries to download yet.");
-  const csv="Date,Type,Amount (INR),Account,Category,Note\r\n"+l.map(x=>[x.date,x.type==="inc"?"Income":"Expense",x.amt,q(an(x.acc)),q(x.cat),q(x.note)].join(",")).join("\r\n")+"\r\n";
+  const csv="Date,Type,Amount (INR),Account,Category,Note\r\n"+l.map(x=>[x.date,x.type==="inc"?"Income":x.type==="tr"?"Transfer":"Expense",x.amt,q(x.type==="tr"?an(x.acc)+" -> "+an(x.to):an(x.acc)),q(x.cat),q(x.note)].join(",")).join("\r\n")+"\r\n";
   const u=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"})),a=document.createElement("a");
   a.href=u;a.download="expenses-"+ymd(new Date())+".csv";document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),4000);
   toast(l.length+" entries downloaded");
@@ -1468,7 +1478,8 @@ pages.help=async()=>`<p style="margin:12px 0"><a href="#/me"><b>← Back</b></a>
 
 pages.admin=async(q)=>{
   if(!ADMIN)return `<div class="empty"><b>🔒 Admin only</b></div>`;
-  const [bs,rs,js,as,cs,rfs]=await Promise.all([fb.getDocs(col("businesses")),fb.getDocs(col("reports")),fb.getDocs(col("jobs")),fb.getDocs(col("articles")),fb.getDocs(col("chats")),fb.getDocs(col("referrals"))]);
+  if(!ADC||Date.now()-ADC.at>90000)ADC={at:Date.now(),d:await Promise.all([fb.getDocs(col("businesses")),fb.getDocs(col("reports")),fb.getDocs(col("jobs")),fb.getDocs(col("articles")),fb.getDocs(col("chats")),fb.getDocs(col("referrals"))])};
+  const [bs,rs,js,as,cs,rfs]=ADC.d;
   const allrefs=rows(rfs).sort(lastOrder).slice(0,60);
   const all=rows(bs).sort(lastOrder),reps=rows(rs).sort(lastOrder),jobs=rows(js).sort(lastOrder),arts=rows(as).sort(lastOrder),unread=rows(cs).filter(c=>c.unreadAdmin).length;
   const pend=all.filter(b=>b.status==="pending"),mine=all.filter(b=>b.addedBy),pj=jobs.filter(j=>j.status==="pending"),pa=arts.filter(a=>a.status==="pending");
@@ -1554,8 +1565,9 @@ const app=$("#app");
 const GATED=new Set(["shop","edit","refs","me","saved","admin","money","bill","chat","chats"]);
 let tok=0;
 const PUB=new Set(["home","list","jobs","articles","qa"]);
-const MEMP=new Set(["feed","money","bill","me","refs","saved","shop"]),MC=new Map();
+const MEMP=new Set(["feed","money","bill","me","refs","saved","shop","admin"]),MC=new Map();
 async function route(keep){
+  if(keep)ADC=null;
   if(!READY){if(!app.innerHTML.trim())app.innerHTML=spin();return}
   const my=++tok;stopChat();document.querySelectorAll(".mw").forEach(x=>x.remove());
   const parts=location.hash.replace(/^#\/?/,"").split("?"),segs=parts[0].split("/").filter(Boolean);
