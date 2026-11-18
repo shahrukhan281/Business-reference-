@@ -1505,7 +1505,7 @@ pages.admin=async(q)=>{
   else body=`<p class="muted small" style="margin-top:0">For shops you added yourself, mark Done here.</p>${allrefs.map(r=>refItem(r,"shop")).join("")||none}`;
   return `<p style="margin:12px 0 6px"><a href="#/me"><b>← Back</b></a></p><h1 style="margin:0 0 8px">Admin</h1>
   <div class="achips">${tabs.map(x=>`<a class="${S===x[0]?"on":""}" href="#/admin?s=${x[0]}">${x[1]} <b>${x[2]}</b></a>`).join("")}</div>
-  <div class="achips act"><button data-ad="add|x">➕ Business</button><button data-ad="bulk|x">📥 Add many</button><button data-ad="ajobs|x">💼 Add jobs</button><button data-ad="art|x">✍️ Article</button><button data-ad="cats|x">🏷 Categories</button><a href="#/chats">💬 Chats${unread?" ("+unread+")":""}</a><button data-ad="dups|x">🔢 Fix numbers</button></div>
+  <div class="achips act"><button data-ad="add|x">➕ Business</button><button data-ad="bulk|x">📥 Add many</button><button data-ad="ajobs|x">💼 Add jobs</button><button data-ad="art|x">✍️ Article</button><button data-ad="cats|x">🏷 Categories</button><a href="#/chats">💬 Chats${unread?" ("+unread+")":""}</a><button data-ad="dups|x">🔢 Fix numbers</button><button data-ad="backup|x">💾 Backup</button></div>
   ${body}`;
 };
 BIND.admin=()=>{
@@ -1660,6 +1660,7 @@ document.addEventListener("click",async e=>{
     if(a==="bulk")return adminBulk();
     if(a==="ajobs")return adminJobs();
     if(a==="cats")return catsAdmin();
+    if(a==="backup")return adminBackup();
     if(a==="bedit"){const ids=(window.ADSEL?window.ADSEL():[]);if(!ids.length)return toast("Select businesses first");return bulkEdit(ids)}
     if(a==="art")return articleModal();
     if(a==="dups")return fixDups();
@@ -1799,6 +1800,20 @@ function fileLoader(m,ta,n,fill,er){
 }
 const XFILE=`<label class="btn o s" style="display:inline-flex;margin:4px 0">📄 Upload Excel / CSV<input class="xf" type="file" accept=".xlsx,.csv,.txt,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" hidden></label>`;
 
+function dl(name,text,type){const b=new Blob([text],{type});const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},800)}
+async function adminBackup(){
+  toast("Preparing backup…");
+  try{
+    const names=["businesses","jobs","articles","referrals","reports"],out={saved:new Date().toISOString()},drop=new Set(["img","imgs","logo"]);
+    for(const n of names)out[n]=rows(await fb.getDocs(col(n))).map(d=>{const o={};for(const k in d)if(!drop.has(k))o[k]=d[k];return o});
+    try{const c=await fb.getDoc(dref("config","cats"));if(c.exists())out.cats=c.data().list}catch{}
+    const day=new Date().toISOString().slice(0,10),q=v=>'"'+String(v==null?"":v).replace(/"/g,'""')+'"';
+    const H=["name","cat","owner","phone","city","area","addr","ct","cv","status","desc","tags","svc"];
+    dl("businesses-"+day+".csv","\uFEFF"+[H.join(","),...out.businesses.map(b=>H.map(k=>q(b[k])).join(","))].join("\r\n"),"text/csv");
+    setTimeout(()=>dl("backup-"+day+".json",JSON.stringify(out),"application/json"),600);
+    toast("Backup downloaded ("+out.businesses.length+" businesses). Photos are not included.");
+  }catch(x){toast(friendly(x))}
+}
 function adminJobs(){
   const m=modal(`<h2>Add many jobs</h2>
    <p class="muted small">One job per line, separated by commas:<br><b>title, type, salary, city, area, mobile, business name, details</b></p>
