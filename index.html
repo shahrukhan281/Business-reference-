@@ -300,6 +300,9 @@ p.bl{margin:3px 0;font-size:1rem}.dealsin{display:flex;gap:8px;align-items:flex-
 .bhead{display:flex;gap:12px;align-items:flex-start;margin-top:4px}.bhl{flex:1;min-width:0}.bhl h1.bnm{font-size:1.35rem;line-height:1.25;margin:0 0 6px;display:block}.bhl h1.bnm span{word-break:break-word}
 .bthumb{position:relative;flex:0 0 38%;max-width:170px;aspect-ratio:1/1;border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:var(--shadow);display:block}.bthumb img{width:100%;height:100%;object-fit:cover;display:block}
 .bthumb .pc{position:absolute;right:6px;bottom:6px;background:rgba(0,0,0,.6);color:#fff;border-radius:8px;padding:2px 8px;font-size:.8rem;font-weight:800}
+.refrow{display:flex;gap:8px;align-items:stretch;margin:10px 0}.refrow .btn{flex:1.25;min-height:54px;font-size:.95rem;padding:8px 10px;margin:0;display:flex;align-items:center;justify-content:center;text-align:center}
+.refrow .money{flex:1;margin:0;padding:6px 8px;border-radius:14px;border-width:2px;display:flex;flex-direction:column;justify-content:center;min-height:54px}.refrow .money small{font-size:.66rem;line-height:1.1}.refrow .money b{font-size:1.05rem;line-height:1.2}
+.wam{white-space:pre-wrap;background:var(--soft);border-radius:12px;padding:10px;font:inherit;font-size:.9rem;margin:8px 0}
 .stat.two{grid-template-columns:1fr 1fr}
 </style>
 <style>[hidden]{display:none!important}.btn.gbtn{background:#fff;color:#222;border:1.5px solid #dadce0;display:flex;align-items:center;justify-content:center;gap:12px;margin:14px 0 4px}.btn.gbtn:hover{background:#f6f8fb}</style>
@@ -797,8 +800,8 @@ pages.biz=async(q,id)=>{
     <button data-x="qr|${esc(b.id)}" class="ac"><span>🔳</span>QR code</button>
   </div>
   ${!own&&!canc?`<span class="closed" style="display:block;margin:8px 0">🔒 Closed now${b.open?" · opens "+esc(t12(b.open)):""}. Call and WhatsApp are available in business hours.</span>`:""}
-  ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`:(noCm(b)?"":`<button class="btn g big" data-refer="${esc(b.id)}">✅ I referred a customer</button>`)}
-  ${noCm(b)?"":`<div class="money"><small>You earn</small><b>${esc(earnText(b))}</b>${b.note?`<p style="margin:4px 0 0">${esc(b.note)}</p>`:""}</div>`}
+  ${own?`<div class="note">This is your own business. <a href="#/edit"><b>Edit it</b></a></div>`:""}
+  ${noCm(b)?"":`<div class="refrow">${own?"":`<button class="btn g" data-refer="${esc(b.id)}">✅ I referred a customer</button>`}<div class="money"><small>You earn</small><b>${esc(earnText(b))}</b></div></div>${b.note?`<p class="muted small" style="margin:0 0 8px">💬 ${esc(b.note)}</p>`:""}`}
   <div class="slider" id="phs" style="margin-top:12px"><div class="sl">${imgs.map(i=>`<img src="${esc(i)}" alt="">`).join("")}</div>${imgs.length>1?`<div class="dots">${imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}</div>
   <div class="card pad qi" style="margin-top:12px"><h2>Quick Information</h2>
     <h4>Address</h4><p>${esc(adr)}</p>
@@ -1879,10 +1882,13 @@ function referral(b){
     try{
       await fb.addDoc(col("referrals"),{bizId:b.id,bizName:b.name,bizPhone:b.phone,workerUid:U.uid,workerName:P.name,workerPhone:P.phone,customer:n,cphone:ph,status:"pending",t:Date.now()});
     }catch(x){er.textContent=friendly(x);btn.disabled=false;btn.textContent="Send referral";return}
-    m.querySelector(".m").innerHTML=`<button class="x">×</button><h2>✅ Referral saved</h2><p>It shows as <b>Pending</b> until the shop marks it <b>Done</b>.</p>
-      <a class="btn g big" target="_blank" rel="noopener" href="${wa(b.phone,"Hi, I referred "+n+" ("+ph+") to you on BusinessConnect.")}">💬 Tell the shop on WhatsApp</a>
-      <a class="btn o big" style="margin-top:10px" href="#/refs" id="seeR">See my referrals</a>`;
-    $("#seeR",m).onclick=()=>m.close();
+    const msg="Hello "+b.name+",\nI referred a customer to you on BusinessConnect.\n\nCustomer name: "+n+"\nCustomer mobile: "+ph+"\nReferred by: "+(P.name||"")+(P.phone?" ("+P.phone+")":"")+"\n\nPlease contact the customer. Thank you.";
+    const box=m.querySelector(".m");box.innerHTML=`<h2>✅ Referral saved</h2><p>Last step: <b>send this message to the shop on WhatsApp</b> so they know about your customer.</p>
+      <pre class="wam">${esc(msg)}</pre>
+      <a class="btn g big" id="wab" target="_blank" rel="noopener" href="${wa(b.phone,msg)}">💬 Send to shop on WhatsApp</a>
+      <p class="muted small" id="wan" style="text-align:center">You must send this message to finish.</p>`;
+    m.querySelectorAll(".x").forEach(x=>x.hidden=true);
+    $("#wab",m).onclick=()=>{setTimeout(()=>{$("#wan",m).outerHTML=`<a class="btn o big" style="margin-top:10px" href="#/refs" id="seeR">Done · See my referrals</a>`;$("#seeR",m).onclick=()=>m.close()},400)};
   };
 }
 
